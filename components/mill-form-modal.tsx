@@ -39,7 +39,7 @@ interface MillFormModalProps {
   onSubmit: (data: MillFormData) => void
   onClose: () => void
 }
-
+ 
 export function MillFormModal({ initialData, onSubmit, onClose }: MillFormModalProps) {
   const form = useForm<MillFormData>({
     defaultValues: initialData
@@ -69,14 +69,20 @@ export function MillFormModal({ initialData, onSubmit, onClose }: MillFormModalP
         },
   })
 
-  const handleSubmit = async (data: MillFormData) => {
-    // Only send password if user provided it
-    const payload = { ...data }
-    if (!payload.password) delete payload.password
+ const handleSubmit = async (data: MillFormData) => {
+  const payload = { ...data }
+  if (!payload.password) delete payload.password
 
+  console.log("payload before submit", payload)
+
+  try {
     await addMillInfo(payload)
     onSubmit(payload)
+  } catch (err) {
+    console.error("addMillInfo failed", err)
   }
+}
+
 
   return (
     <Form {...form}>
@@ -95,6 +101,25 @@ export function MillFormModal({ initialData, onSubmit, onClose }: MillFormModalP
             </FormItem>
           )}
         />
+
+        {/* Mill Code */}
+
+ <FormField
+          control={form.control}
+          name="millcode"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Mill Code</FormLabel>
+              <FormControl>
+                <Input placeholder="Enter mill code" type="text" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+
+
 
         {/* Focal Person */}
         <FormField

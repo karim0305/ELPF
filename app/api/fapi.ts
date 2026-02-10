@@ -1,7 +1,7 @@
 import axios from 'axios';
 
- const baseUrl = 'https://elpb.vercel.app/elpapi';
-//  const baseUrl = 'http://localhost:3010/elpapi';
+//  const baseUrl = 'https://elpb.vercel.app/elpapi';
+ const baseUrl = 'http://localhost:3010/elpapi';
 
 /* ===================== AUTH ===================== */
 export const login = (data: any) =>
