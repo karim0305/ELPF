@@ -47,15 +47,7 @@ export default function MillsPage() {
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
   const [mills, setMills] = useState<Mill[]>([])
 useEffect(() => {
-  // const fetchData = async () => {
-  //   try {
-  //     const res = await fetch("http://localhost:3000/api/millinfo")
-  //     const data = await res.json()
-  //     console.log("data", data)
-  //   } catch (err) {
-  //     console.error("fetch error", err)
-  //   }
-  // }
+ 
  fetchMills();
 }, [])
 const fetchMills = async () => {

@@ -259,7 +259,7 @@ export function MillFormModal({ initialData, onSubmit, onClose }: MillFormModalP
 
         {/* Actions */}
         <div className="flex gap-2 pt-4">
-          <Button type="submit" className="bg-primary hover:bg-primary/90 text-primary-foreground flex-1">
+          <Button type="submit" className="bg-primary hover:bg-primary/90 text-primary-foreground flex-1" onClick={onClose}>
             {initialData ? "Update Mill" : "Register Mill"}
           </Button>
           <Button type="button" variant="outline" className="border-border/50 bg-transparent flex-1" onClick={onClose}>
