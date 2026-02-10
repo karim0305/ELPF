@@ -1,64 +1,90 @@
 "use client"
+import { addMillInfo } from "@/app/api/fapi"
+import { Mill } from "@/app/dashboard/super-admin/mills/page"
 import { Button } from "@/components/ui/button"
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { useForm } from "react-hook-form"
 
-interface MillFormData {
-  millName: string
-  focalPerson: string
-  contact: string
-  address: string
-  username: string
-  password: string
-  status: "active" | "inactive" | "suspended"
+export interface MillFormData {
+  millcode: string
+  millname: string
+  focalperson: string
+  cnic: string
+  phone: string
+  address?: string
+  email: string
+  role?: string
+  status: "Active" | "Inactive" | "Suspended"
+  password?: string
 }
 
 interface MillFormModalProps {
-  initialData?: {
-    millName: string
-    focalPerson: string
-    contact: string
-    address: string
-    username: string
-    status: "active" | "inactive" | "suspended"
-  }
-  onSubmit: (data: Omit<MillFormData, "password"> | MillFormData) => void
+  initialData?: Mill
+  onSubmit: (data: MillFormData) => void
   onClose: () => void
 }
 
 export function MillFormModal({ initialData, onSubmit, onClose }: MillFormModalProps) {
   const form = useForm<MillFormData>({
     defaultValues: initialData
-      ? { ...initialData, password: "" }
-      : {
-          millName: "",
-          focalPerson: "",
-          contact: "",
-          address: "",
-          username: "",
+      ? {
+          millcode: initialData.millcode,
+          millname: initialData.millname,
+          focalperson: initialData.focalperson,
+          cnic: initialData.cnic,
+          phone: initialData.phone,
+          address: initialData.address,
+          email: initialData.email,
+          role: initialData.role,
+          status: initialData.status || "Active",
           password: "",
-          status: "active",
+        }
+      : {
+          millcode: "",
+          millname: "",
+          focalperson: "",
+          cnic: "",
+          phone: "",
+          address: "",
+          email: "",
+          role: "",
+          status: "Active",
+          password: "",
         },
   })
 
-  const handleSubmit = (data: MillFormData) => {
-    if (initialData) {
-      const { password, ...restData } = data
-      onSubmit(restData)
-    } else {
-      onSubmit(data)
-    }
+  const handleSubmit = async (data: MillFormData) => {
+    // Only send password if user provided it
+    const payload = { ...data }
+    if (!payload.password) delete payload.password
+
+    await addMillInfo(payload)
+    onSubmit(payload)
   }
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-        {/* Mill Name Field */}
+        {/* Mill Name */}
         <FormField
           control={form.control}
-          name="millName"
+          name="millname"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Mill Name</FormLabel>
@@ -70,10 +96,10 @@ export function MillFormModal({ initialData, onSubmit, onClose }: MillFormModalP
           )}
         />
 
-        {/* Focal Person Field */}
+        {/* Focal Person */}
         <FormField
           control={form.control}
-          name="focalPerson"
+          name="focalperson"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Focal Person</FormLabel>
@@ -85,22 +111,37 @@ export function MillFormModal({ initialData, onSubmit, onClose }: MillFormModalP
           )}
         />
 
-        {/* Contact Field */}
+        {/* CNIC */}
         <FormField
           control={form.control}
-          name="contact"
+          name="cnic"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Contact Number</FormLabel>
+              <FormLabel>CNIC</FormLabel>
               <FormControl>
-                <Input placeholder="e.g., +91 98765 43210" type="tel" {...field} />
+                <Input placeholder="Enter CNIC" type="text" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
 
-        {/* Address Field */}
+        {/* Phone */}
+        <FormField
+          control={form.control}
+          name="phone"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Phone Number</FormLabel>
+              <FormControl>
+                <Input placeholder="+92 300 1234567" type="tel" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* Address */}
         <FormField
           control={form.control}
           name="address"
@@ -108,29 +149,44 @@ export function MillFormModal({ initialData, onSubmit, onClose }: MillFormModalP
             <FormItem>
               <FormLabel>Address</FormLabel>
               <FormControl>
-                <Input placeholder="Enter full address" type="text" {...field} />
+                <Input placeholder="Enter address" type="text" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
 
-        {/* Username Field */}
+        {/* Email */}
         <FormField
           control={form.control}
-          name="username"
+          name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Username</FormLabel>
+              <FormLabel>Email</FormLabel>
               <FormControl>
-                <Input placeholder="Enter username" type="text" {...field} />
+                <Input placeholder="Enter email" type="email" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
 
-        {/* Password Field */}
+        {/* Role */}
+        <FormField
+          control={form.control}
+          name="role"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Role</FormLabel>
+              <FormControl>
+                <Input placeholder="Enter role" type="text" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* Password */}
         <FormField
           control={form.control}
           name="password"
@@ -152,7 +208,7 @@ export function MillFormModal({ initialData, onSubmit, onClose }: MillFormModalP
           )}
         />
 
-        {/* Status Field */}
+        {/* Status */}
         <FormField
           control={form.control}
           name="status"
@@ -166,9 +222,9 @@ export function MillFormModal({ initialData, onSubmit, onClose }: MillFormModalP
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="inactive">Inactive</SelectItem>
-                  <SelectItem value="suspended">Suspended</SelectItem>
+                  <SelectItem value="Active">Active</SelectItem>
+                  <SelectItem value="Inactive">Inactive</SelectItem>
+                  <SelectItem value="Suspended">Suspended</SelectItem>
                 </SelectContent>
               </Select>
               <FormMessage />
@@ -176,7 +232,7 @@ export function MillFormModal({ initialData, onSubmit, onClose }: MillFormModalP
           )}
         />
 
-        {/* Form Actions */}
+        {/* Actions */}
         <div className="flex gap-2 pt-4">
           <Button type="submit" className="bg-primary hover:bg-primary/90 text-primary-foreground flex-1">
             {initialData ? "Update Mill" : "Register Mill"}

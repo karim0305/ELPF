@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
 import { SidebarNav } from "@/components/sidebar-nav"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -14,93 +14,83 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { MillFormModal } from "@/components/mill-form-modal"
+import { MillFormData, MillFormModal } from "@/components/mill-form-modal"
+import { addMillInfo, getMillInfos, updateMillInfo } from "@/app/api/fapi"
 
 const superAdminNav = [
   { label: "All Mills", href: "/dashboard/super-admin/mills", icon: "🏭" },
   { label: "All Users", href: "/dashboard/super-admin/users", icon: "👥" },
 ]
-
-interface Mill {
-  id: string
-  millName: string
-  focalPerson: string
-  contact: string
+export interface Mill {
+  _id: string
+  millcode: string
+  millname: string
+  focalperson: string
+  cnic: string
+  phone: string
   address: string
-  username: string
-  status: "active" | "inactive" | "suspended"
+  email: string
+  role: string
+  profilePicture?: string
+  status: "Active" | "Inactive" | "Suspended"
+  lastLogin?: string
   createdAt: string
+  updatedAt?: string
 }
 
-const mockMills: Mill[] = [
-  {
-    id: "1",
-    millName: "Valley Sugar Mill",
-    focalPerson: "Rajesh Kumar",
-    contact: "+91 98765 43210",
-    address: "123 Mill Road, Maharashtra, India",
-    username: "valley.mill",
-    status: "active",
-    createdAt: "2024-01-10",
-  },
-  {
-    id: "2",
-    millName: "Golden Harvest Mill",
-    focalPerson: "Priya Singh",
-    contact: "+91 87654 32109",
-    address: "456 Factory Lane, Uttar Pradesh, India",
-    username: "golden.harvest",
-    status: "active",
-    createdAt: "2024-01-15",
-  },
-  {
-    id: "3",
-    millName: "Green Fields Mill",
-    focalPerson: "Amit Patel",
-    contact: "+91 76543 21098",
-    address: "789 Agricultural Park, Gujarat, India",
-    username: "green.fields",
-    status: "inactive",
-    createdAt: "2024-02-01",
-  },
-  {
-    id: "4",
-    millName: "Premium Sugarcane Processing",
-    focalPerson: "Deepika Sharma",
-    contact: "+91 65432 10987",
-    address: "321 Industrial Zone, Karnataka, India",
-    username: "premium.sugar",
-    status: "active",
-    createdAt: "2024-02-10",
-  },
-]
+
 
 export default function MillsPage() {
-  const [mills, setMills] = useState<Mill[]>(mockMills)
+ 
   const [editingMill, setEditingMill] = useState<Mill | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
+  const [mills, setMills] = useState<Mill[]>([])
+useEffect(() => {
+  // const fetchData = async () => {
+  //   try {
+  //     const res = await fetch("http://localhost:3000/api/millinfo")
+  //     const data = await res.json()
+  //     console.log("data", data)
+  //   } catch (err) {
+  //     console.error("fetch error", err)
+  //   }
+  // }
+ fetchMills();
+}, [])
+const fetchMills = async () => {
+  try {
+    const res = await getMillInfos()
 
-  const handleCreateMill = (formData: Omit<Mill, "id" | "createdAt">) => {
-    const newMill: Mill = {
-      ...formData,
-      id: `${mills.length + 1}`,
-      createdAt: new Date().toISOString().split("T")[0],
-    }
-    setMills([...mills, newMill])
-    setIsModalOpen(false)
-  }
+    // 🔴 IMPORTANT:
+    // If your backend returns { data: [...] }
+    setMills(res.data)
+    console.log(res.data)
 
-  const handleUpdateMill = (formData: Omit<Mill, "id" | "createdAt">) => {
-    if (editingMill) {
-      setMills(mills.map((m) => (m.id === editingMill.id ? { ...m, ...formData } : m)))
-      setEditingMill(null)
-      setIsModalOpen(false)
-    }
+    // If backend returns { success: true, data: [...] }
+    // setMills(res.data.data)
+
+  } catch (error) {
+    console.error("Failed to fetch mills", error)
   }
+}
+
+  const handleCreateMill = async (data: MillFormData) => {
+  await addMillInfo(data)
+  fetchMills()
+  setIsModalOpen(false)
+}
+
+const handleUpdateMill = async (data: MillFormData) => {
+  if (!editingMill) return
+  await updateMillInfo(editingMill._id, data)
+  fetchMills()
+  setEditingMill(null)
+  setIsModalOpen(false)
+}
 
   const handleDeleteMill = (millId: string) => {
-    setMills(mills.filter((m) => m.id !== millId))
+    setMills(mills.filter((m) => m._id !== millId))
     setDeleteConfirm(null)
   }
 
@@ -116,7 +106,7 @@ export default function MillsPage() {
 
   return (
     <div className="flex bg-background min-h-screen">
-      <SidebarNav items={superAdminNav} userRole="super-admin" />
+      <SidebarNav title="All Mills" items={superAdminNav} userRole="super-admin" />
 
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Top Bar */}
@@ -175,7 +165,7 @@ export default function MillsPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-3xl font-bold text-primary">
-                    {mills.filter((m) => m.status === "active").length}
+                    {mills.filter((m) => m.status === "Active").length}
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">Currently operational</p>
                 </CardContent>
@@ -187,7 +177,7 @@ export default function MillsPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-3xl font-bold text-secondary">
-                    {mills.filter((m) => m.status === "inactive").length}
+                    {mills.filter((m) => m.status === "Inactive").length}
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">Not operational</p>
                 </CardContent>
@@ -199,7 +189,7 @@ export default function MillsPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-3xl font-bold text-accent">
-                    {mills.filter((m) => m.status === "suspended").length}
+                    {mills.filter((m) => m.status === "Suspended").length}
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">Temporarily suspended</p>
                 </CardContent>
@@ -218,38 +208,47 @@ export default function MillsPage() {
                     <TableHeader className="bg-muted/30">
                       <TableRow className="hover:bg-transparent">
                         <TableHead className="font-semibold">Mill Name</TableHead>
+                        <TableHead className="font-semibold">Mill Code</TableHead>
                         <TableHead className="font-semibold">Focal Person</TableHead>
                         <TableHead className="font-semibold">Contact</TableHead>
-                        <TableHead className="font-semibold">Username</TableHead>
+                        <TableHead className="font-semibold">CNIC</TableHead>
+                        <TableHead className="font-semibold">Email</TableHead>
                         <TableHead className="font-semibold">Status</TableHead>
-                        <TableHead className="font-semibold">Created</TableHead>
+                        <TableHead className="font-semibold">Role</TableHead>
+
                         <TableHead className="font-semibold text-right">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {mills.map((mill) => (
-                        <TableRow key={mill.id} className="hover:bg-muted/20">
+                        <TableRow key={mill._id} className="hover:bg-muted/20">
                           <TableCell>
                             <div>
-                              <p className="font-medium text-foreground">{mill.millName}</p>
+                              <p className="font-medium text-foreground">{mill.millname}</p>
                               <p className="text-xs text-muted-foreground">{mill.address}</p>
                             </div>
                           </TableCell>
-                          <TableCell>
-                            <span className="text-sm text-foreground">{mill.focalPerson}</span>
+                             <TableCell>
+                            <span className="text-sm text-foreground">{mill.millcode}</span>
                           </TableCell>
                           <TableCell>
-                            <span className="text-sm text-foreground">{mill.contact}</span>
+                            <span className="text-sm text-foreground">{mill.focalperson}</span>
                           </TableCell>
                           <TableCell>
-                            <span className="text-sm text-foreground">{mill.username}</span>
+                            <span className="text-sm text-foreground">{mill.phone}</span>
+                          </TableCell>
+                          <TableCell>
+                            <span className="text-sm text-foreground">{mill.cnic}</span>
+                          </TableCell>
+                          <TableCell>
+                            <span className="text-sm text-foreground">{mill.email}</span>
                           </TableCell>
                           <TableCell>
                             <span
                               className={`text-xs px-2 py-1 rounded font-medium ${
-                                mill.status === "active"
+                                mill.status === "Active"
                                   ? "bg-primary/20 text-primary"
-                                  : mill.status === "inactive"
+                                  : mill.status === "Inactive"
                                     ? "bg-secondary/20 text-secondary"
                                     : "bg-accent/20 text-accent"
                               }`}
@@ -258,7 +257,7 @@ export default function MillsPage() {
                             </span>
                           </TableCell>
                           <TableCell>
-                            <span className="text-sm text-muted-foreground">{mill.createdAt}</span>
+                            <span className="text-sm text-muted-foreground">{mill.role}</span>
                           </TableCell>
                           <TableCell className="text-right">
                             <div className="flex gap-2 justify-end">
@@ -270,12 +269,12 @@ export default function MillsPage() {
                               >
                                 ✏️ Edit
                               </Button>
-                              {deleteConfirm === mill.id ? (
+                              {deleteConfirm === mill._id ? (
                                 <>
                                   <Button
                                     size="sm"
                                     className="bg-destructive hover:bg-destructive/90 text-xs h-7"
-                                    onClick={() => handleDeleteMill(mill.id)}
+                                    onClick={() => handleDeleteMill(mill._id)}
                                   >
                                     Confirm
                                   </Button>
@@ -293,7 +292,7 @@ export default function MillsPage() {
                                   size="sm"
                                   variant="outline"
                                   className="border-destructive/50 bg-destructive/5 text-destructive hover:bg-destructive/10 text-xs h-7"
-                                  onClick={() => setDeleteConfirm(mill.id)}
+                                  onClick={() => setDeleteConfirm(mill._id)}
                                 >
                                   🗑️ Delete
                                 </Button>
