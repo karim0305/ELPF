@@ -1,6 +1,7 @@
 "use client"
-import { addMillInfo } from "@/app/api/fapi"
-import { Mill } from "@/app/dashboard/super-admin/mills/page"
+
+import { addMillInfo, updateMillInfo } from "@/app/api/fapi"
+import { useToast } from "@/hooks/use-toast"
 import { Button } from "@/components/ui/button"
 import {
   Form,
@@ -11,6 +12,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form"
+import { useState } from "react"
 import { Input } from "@/components/ui/input"
 import {
   Select,
@@ -20,6 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { useForm } from "react-hook-form"
+import { Mill } from "@/app/dashboard/super-admin/mills/page"
 
 export interface MillFormData {
   millcode: string
@@ -29,65 +32,136 @@ export interface MillFormData {
   phone: string
   address?: string
   email: string
-  role?: string
+  profilePicture?: string
   status: "Active" | "Inactive" | "Suspended"
   password?: string
 }
 
+
+
 interface MillFormModalProps {
-  initialData?: Mill
-  onSubmit: (data: MillFormData) => void
+  initialData?: Mill | null
   onClose: () => void
+  onSuccess: () => void
 }
- 
-export function MillFormModal({ initialData, onSubmit, onClose }: MillFormModalProps) {
+
+export function MillFormModal({ initialData, onClose, onSuccess }: MillFormModalProps) {
+  const { toast } = useToast()
   const form = useForm<MillFormData>({
-    defaultValues: initialData
-      ? {
-          millcode: initialData.millcode,
-          millname: initialData.millname,
-          focalperson: initialData.focalperson,
-          cnic: initialData.cnic,
-          phone: initialData.phone,
-          address: initialData.address,
-          email: initialData.email,
-          role: initialData.role,
-          status: initialData.status || "Active",
-          password: "",
-        }
-      : {
-          millcode: "",
-          millname: "",
-          focalperson: "",
-          cnic: "",
-          phone: "",
-          address: "",
-          email: "",
-          role: "",
-          status: "Active",
-          password: "",
-        },
+    defaultValues: {
+      millcode: initialData?.millcode || "",
+      millname: initialData?.millname || "",
+      focalperson: initialData?.focalperson || "",
+      cnic: initialData?.cnic || "",
+      phone: initialData?.phone || "",
+      address: initialData?.address || "",
+      email: initialData?.email || "",
+    
+      profilePicture: initialData?.profilePicture || "",
+      status: initialData?.status || "Active",
+      password: "",
+    },
   })
 
- const handleSubmit = async (data: MillFormData) => {
-  const payload = { ...data }
-  if (!payload.password) delete payload.password
+  // Cloudinary config
+  const CLOUDINARY_UPLOAD_PRESET = 'tailorImages'
+  const CLOUDINARY_CLOUD_NAME = 'dzfqgziwl'
+  const CLOUDINARY_API = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`
 
-  console.log("payload before submit", payload)
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [preview, setPreview] = useState<string>(initialData?.profilePicture || "")
 
-  try {
-    await addMillInfo(payload)
-    onSubmit(payload)
-  } catch (err) {
-    console.error("addMillInfo failed", err)
+  const uploadToCloudinary = async (file: File) => {
+    try {
+      const fd = new FormData()
+      fd.append('file', file)
+      fd.append('upload_preset', CLOUDINARY_UPLOAD_PRESET)
+
+      const res = await fetch(CLOUDINARY_API, {
+        method: 'POST',
+        body: fd,
+      })
+      const data = await res.json()
+      return data.secure_url || data.url
+    } catch (err) {
+      console.error('Cloudinary upload failed', err)
+      return null
+    }
   }
-}
 
+  const handleSubmit = async (data: MillFormData) => {
+    try {
+      const payload = { ...data }
+      if (!payload.password) delete payload.password
+
+      // If a new file was selected, upload it first and attach URL
+      if (selectedFile) {
+        const url = await uploadToCloudinary(selectedFile)
+        if (url) payload.profilePicture = url
+      }
+
+      // If editing, and no new file selected, keep existing profilePicture value
+      if (!payload.profilePicture && initialData?.profilePicture) {
+        payload.profilePicture = initialData.profilePicture
+      }
+
+      if (initialData && initialData._id) {
+        await updateMillInfo(initialData._id, payload)
+        toast({ title: 'Updated', description: 'Mill information updated successfully.' })
+      } else {
+        await addMillInfo(payload)
+        toast({ title: 'Created', description: 'Mill registered successfully.' })
+      }
+
+      form.reset()
+      setSelectedFile(null)
+      setPreview("")
+      onSuccess() // refresh parent + close modal
+    } catch (error: any) {
+      console.error("Failed to add mill", error)
+      const message = error?.response?.data?.message || error?.message || 'Something went wrong'
+      toast({ title: 'Error', description: String(message), variant: 'destructive' })
+    }
+  }
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-        {/* Mill Name */}
+        {/* Profile picture upload */}
+        <div className="flex items-center gap-4">
+          <div className="h-16 w-16 rounded-full overflow-hidden bg-muted flex items-center justify-center">
+            {preview ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={preview} alt="avatar" className="h-full w-full object-cover" />
+            ) : (
+              <span className="text-sm text-muted-foreground">No Image</span>
+            )}
+          </div>
+          <div className="flex flex-col">
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => {
+                const f = e.target.files?.[0] || null
+                setSelectedFile(f)
+                if (f) setPreview(URL.createObjectURL(f))
+              }}
+            />
+            {preview && (
+              <button
+                type="button"
+                className="text-sm text-destructive mt-2"
+                onClick={() => {
+                  setSelectedFile(null)
+                  setPreview("")
+                }}
+              >
+                Remove
+              </button>
+            )}
+          </div>
+        </div>
+
         <FormField
           control={form.control}
           name="millname"
@@ -95,33 +169,27 @@ export function MillFormModal({ initialData, onSubmit, onClose }: MillFormModalP
             <FormItem>
               <FormLabel>Mill Name</FormLabel>
               <FormControl>
-                <Input placeholder="Enter mill name" type="text" {...field} />
+                <Input placeholder="Enter mill name" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
 
-        {/* Mill Code */}
-
- <FormField
+        <FormField
           control={form.control}
           name="millcode"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Mill Code</FormLabel>
               <FormControl>
-                <Input placeholder="Enter mill code" type="text" {...field} />
+                <Input placeholder="Enter mill code" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
 
-
-
-
-        {/* Focal Person */}
         <FormField
           control={form.control}
           name="focalperson"
@@ -129,14 +197,13 @@ export function MillFormModal({ initialData, onSubmit, onClose }: MillFormModalP
             <FormItem>
               <FormLabel>Focal Person</FormLabel>
               <FormControl>
-                <Input placeholder="Enter focal person name" type="text" {...field} />
+                <Input placeholder="Enter focal person" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
 
-        {/* CNIC */}
         <FormField
           control={form.control}
           name="cnic"
@@ -144,29 +211,27 @@ export function MillFormModal({ initialData, onSubmit, onClose }: MillFormModalP
             <FormItem>
               <FormLabel>CNIC</FormLabel>
               <FormControl>
-                <Input placeholder="Enter CNIC" type="text" {...field} />
+                <Input placeholder="Enter CNIC" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
 
-        {/* Phone */}
         <FormField
           control={form.control}
           name="phone"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Phone Number</FormLabel>
+              <FormLabel>Phone</FormLabel>
               <FormControl>
-                <Input placeholder="+92 300 1234567" type="tel" {...field} />
+                <Input placeholder="+92 300 1234567" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
 
-        {/* Address */}
         <FormField
           control={form.control}
           name="address"
@@ -174,14 +239,13 @@ export function MillFormModal({ initialData, onSubmit, onClose }: MillFormModalP
             <FormItem>
               <FormLabel>Address</FormLabel>
               <FormControl>
-                <Input placeholder="Enter address" type="text" {...field} />
+                <Input placeholder="Enter address" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
 
-        {/* Email */}
         <FormField
           control={form.control}
           name="email"
@@ -189,29 +253,14 @@ export function MillFormModal({ initialData, onSubmit, onClose }: MillFormModalP
             <FormItem>
               <FormLabel>Email</FormLabel>
               <FormControl>
-                <Input placeholder="Enter email" type="email" {...field} />
+                <Input type="email" placeholder="Enter email" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
 
-        {/* Role */}
-        <FormField
-          control={form.control}
-          name="role"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Role</FormLabel>
-              <FormControl>
-                <Input placeholder="Enter role" type="text" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
 
-        {/* Password */}
         <FormField
           control={form.control}
           name="password"
@@ -219,28 +268,21 @@ export function MillFormModal({ initialData, onSubmit, onClose }: MillFormModalP
             <FormItem>
               <FormLabel>Password</FormLabel>
               <FormControl>
-                <Input
-                  placeholder={initialData ? "Leave blank to keep current password" : "Enter password"}
-                  type="password"
-                  {...field}
-                />
+                <Input type="password" placeholder="Enter password" {...field} />
               </FormControl>
-              <FormDescription>
-                {initialData ? "Leave blank to keep the current password" : "Minimum 8 characters"}
-              </FormDescription>
+              <FormDescription>Minimum 8 characters</FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
 
-        {/* Status */}
         <FormField
           control={form.control}
           name="status"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Status</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <Select value={field.value} onValueChange={field.onChange}>
                 <FormControl>
                   <SelectTrigger>
                     <SelectValue placeholder="Select status" />
@@ -257,12 +299,11 @@ export function MillFormModal({ initialData, onSubmit, onClose }: MillFormModalP
           )}
         />
 
-        {/* Actions */}
         <div className="flex gap-2 pt-4">
-          <Button type="submit" className="bg-primary hover:bg-primary/90 text-primary-foreground flex-1" onClick={onClose}>
-            {initialData ? "Update Mill" : "Register Mill"}
+          <Button type="submit" className="flex-1">
+            {initialData ? "Save Changes" : "Register Mill"}
           </Button>
-          <Button type="button" variant="outline" className="border-border/50 bg-transparent flex-1" onClick={onClose}>
+          <Button type="button" variant="outline" className="flex-1" onClick={onClose}>
             Cancel
           </Button>
         </div>
