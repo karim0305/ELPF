@@ -1,11 +1,12 @@
 "use client"
 
-import { useState } from "react"
-
+import { useEffect, useState } from "react"
 import { SidebarNav } from "@/components/sidebar-nav"
+import { useToast } from "@/hooks/use-toast"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
   Dialog,
   DialogContent,
@@ -15,103 +16,148 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { UserFormModal } from "@/components/user-form-modal"
+import { getSuperAdmins, addSuperAdmin, updateSuperAdmin, deleteSuperAdmin } from "@/app/api/fapi"
 
 const superAdminNav = [
   { label: "All Mills", href: "/dashboard/super-admin/mills", icon: "🏭" },
   { label: "All Users", href: "/dashboard/super-admin/users", icon: "👥" },
 ]
 
-interface User {
-  id: string
-  name: string
-  contact: string
-  address: string
-  role: "SuperAdmin" | "Admin" | "User"
-  username: string
-  status: "active" | "inactive"
-  createdAt: string
+export interface SuperAdmin {
+  _id: string;
+  name: string;
+  email: string;
+  phone: string;
+  cnic: string;
+  address: string;
+  image: string;
+  status: "Active" | "Inactive";
+  password: string;
+  role: "SuperAdmin" | "Admin";
+  createdAt: string;
 }
 
-const mockUsers: User[] = [
-  {
-    id: "1",
-    name: "John Administrator",
-    contact: "+1 (555) 123-4567",
-    address: "123 Main St, New York, NY",
-    role: "SuperAdmin",
-    username: "john.admin",
-    status: "active",
-    createdAt: "2024-01-15",
-  },
-  {
-    id: "2",
-    name: "Sarah Manager",
-    contact: "+1 (555) 234-5678",
-    address: "456 Oak Ave, Los Angeles, CA",
-    role: "Admin",
-    username: "sarah.manager",
-    status: "active",
-    createdAt: "2024-01-20",
-  },
-  {
-    id: "3",
-    name: "Mike Operator",
-    contact: "+1 (555) 345-6789",
-    address: "789 Pine Rd, Chicago, IL",
-    role: "User",
-    username: "mike.operator",
-    status: "inactive",
-    createdAt: "2024-02-01",
-  },
-  {
-    id: "4",
-    name: "Emily Davis",
-    contact: "+1 (555) 456-7890",
-    address: "321 Elm St, Houston, TX",
-    role: "Admin",
-    username: "emily.davis",
-    status: "active",
-    createdAt: "2024-02-10",
-  },
-  {
-    id: "5",
-    name: "David Chen",
-    contact: "+1 (555) 567-8901",
-    address: "654 Maple Dr, Phoenix, AZ",
-    role: "User",
-    username: "david.chen",
-    status: "active",
-    createdAt: "2024-02-15",
-  },
-]
-
 export default function UsersPage() {
-  const [users, setUsers] = useState<User[]>(mockUsers)
-  const [editingUser, setEditingUser] = useState<User | null>(null)
+  const [users, setUsers] = useState<SuperAdmin[]>([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [editingUser, setEditingUser] = useState<SuperAdmin | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
+  const [submitting, setSubmitting] = useState(false)
+  const [updatingStatusId, setUpdatingStatusId] = useState<string | null>(null)
+  const { toast } = useToast()
 
-  const handleCreateUser = (formData: Omit<User, "id" | "createdAt">) => {
-    const newUser: User = {
-      ...formData,
-      id: `${users.length + 1}`,
-      createdAt: new Date().toISOString().split("T")[0],
+  useEffect(() => {
+    fetchSuperAdmins()
+  }, [])
+
+  const fetchSuperAdmins = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      const response = await getSuperAdmins()
+      setUsers(response.data.data || response.data || [])
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.message || "Failed to fetch users"
+      setError(errorMessage)
+      toast({ title: 'Error', description: errorMessage, variant: 'destructive' })
+      console.error(err)
+    } finally {
+      setLoading(false)
     }
-    setUsers([...users, newUser])
-    setIsModalOpen(false)
   }
 
-  const handleUpdateUser = (formData: Omit<User, "id" | "createdAt">) => {
-    if (editingUser) {
-      setUsers(users.map((u) => (u.id === editingUser.id ? { ...u, ...formData } : u)))
+  const handleCreateUser = async (formData: any) => {
+    try {
+      setSubmitting(true)
+      console.log('➕ Creating User:', formData)
+      const response = await addSuperAdmin(formData)
+      const newUser = response.data.data || response.data
+      console.log('✅ User Created:', newUser)
+      setUsers([...users, newUser])
+      setIsModalOpen(false)
+      toast({ title: 'Created', description: 'User created successfully.' })
+    } catch (err: any) {
+      console.error('❌ Create Error:', {
+        status: err.response?.status,
+        message: err.response?.data?.message,
+        url: err.config?.url,
+        error: err.message
+      })
+      const errorMessage = err.response?.data?.message || 
+        (err.response?.status === 404 ? `API Endpoint not found. Make sure backend is running on http://localhost:3010` : "Failed to create user")
+      toast({ title: 'Error', description: errorMessage, variant: 'destructive' })
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const handleUpdateUser = async (formData: any) => {
+    if (!editingUser) return
+
+    try {
+      setSubmitting(true)
+      const updateData: any = {
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        cnic: formData.cnic,
+        address: formData.address,
+        image: formData.image,
+        role: formData.role,
+        status: formData.status,
+      }
+      if (formData.password !== undefined && formData.password) {
+        updateData.password = formData.password
+      }
+      
+      console.log('🔄 Updating User:', { userId: editingUser._id, data: updateData })
+      const response = await updateSuperAdmin(editingUser._id, updateData)
+      const updatedUser = response.data.data || response.data
+      console.log('✅ User Updated:', updatedUser)
+      
+      setUsers(users.map((u) => (u._id === editingUser._id ? updatedUser : u)))
       setEditingUser(null)
       setIsModalOpen(false)
+      toast({ title: 'Updated', description: 'User updated successfully.' })
+    } catch (err: any) {
+      console.error('❌ Update Error:', {
+        status: err.response?.status,
+        message: err.response?.data?.message,
+        url: err.config?.url,
+        error: err.message
+      })
+      const errorMessage = err.response?.data?.message || 
+        (err.response?.status === 404 ? `API Endpoint not found. Make sure backend is running on http://localhost:3010` : "Failed to update user")
+      toast({ title: 'Error', description: errorMessage, variant: 'destructive' })
+    } finally {
+      setSubmitting(false)
     }
   }
 
-  const handleDeleteUser = (userId: string) => {
-    setUsers(users.filter((u) => u.id !== userId))
-    setDeleteConfirm(null)
+  const handleDeleteUser = async (userId: string) => {
+    try {
+      setSubmitting(true)
+      console.log('🗑️ Deleting User:', userId)
+      await deleteSuperAdmin(userId)
+      console.log('✅ User Deleted')
+      setUsers(users.filter((u) => u._id !== userId))
+      setDeleteConfirm(null)
+      toast({ title: 'Deleted', description: 'User deleted successfully.' })
+    } catch (err: any) {
+      console.error('❌ Delete Error:', {
+        status: err.response?.status,
+        message: err.response?.data?.message,
+        url: err.config?.url,
+        error: err.message
+      })
+      const errorMessage = err.response?.data?.message || 
+        (err.response?.status === 404 ? `API Endpoint not found. Make sure backend is running on http://localhost:3010` : "Failed to delete user")
+      toast({ title: 'Error', description: errorMessage, variant: 'destructive' })
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   const handleNewUser = () => {
@@ -119,14 +165,40 @@ export default function UsersPage() {
     setIsModalOpen(true)
   }
 
-  const handleEditUser = (user: User) => {
+  const handleEditUser = (user: SuperAdmin) => {
     setEditingUser(user)
     setIsModalOpen(true)
   }
 
+  const handleStatusToggle = async (user: SuperAdmin) => {
+    try {
+      setUpdatingStatusId(user._id)
+      const newStatus = user.status === "Active" ? "Inactive" : "Active"
+      console.log('🔄 Toggling Status:', { userId: user._id, from: user.status, to: newStatus })
+      
+      const response = await updateSuperAdmin(user._id, { status: newStatus })
+      const updatedUser = response.data.data || response.data
+      console.log('✅ Status Updated:', updatedUser)
+      
+      setUsers(users.map((u) => (u._id === user._id ? updatedUser : u)))
+      toast({ title: 'Updated', description: `User status set to ${newStatus}.` })
+    } catch (err: any) {
+      console.error('❌ Status Update Error:', {
+        status: err.response?.status,
+        message: err.response?.data?.message,
+        url: err.config?.url,
+        error: err.message
+      })
+      const errorMessage = err.response?.data?.message || "Failed to update status"
+      toast({ title: 'Error', description: errorMessage, variant: 'destructive' })
+    } finally {
+      setUpdatingStatusId(null)
+    }
+  }
+
   return (
     <div className="flex bg-background min-h-screen">
-      <SidebarNav items={superAdminNav} userRole="super-admin" />
+      <SidebarNav title="Superadmin Dashboard" items={superAdminNav} userRole="super-admin" />
 
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Top Bar */}
@@ -134,14 +206,19 @@ export default function UsersPage() {
           <div>
             <h1 className="text-2xl font-bold text-foreground">All Users Management</h1>
             <p className="text-sm text-muted-foreground">Create, edit, and manage system users</p>
+            {error && <p className="text-sm text-destructive mt-1">{error}</p>}
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" className="border-border/50 bg-transparent">
+            <Button variant="outline" className="border-border/50 bg-transparent" disabled={loading}>
               📥 Export Users
             </Button>
             <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
               <DialogTrigger asChild>
-                <Button className="bg-primary hover:bg-primary/90 text-primary-foreground" onClick={handleNewUser}>
+                <Button 
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground" 
+                  onClick={handleNewUser}
+                  disabled={loading}
+                >
                   ➕ Add New User
                 </Button>
               </DialogTrigger>
@@ -156,6 +233,7 @@ export default function UsersPage() {
                   initialData={editingUser || undefined}
                   onSubmit={editingUser ? handleUpdateUser : handleCreateUser}
                   onClose={() => setIsModalOpen(false)}
+                  isLoading={submitting}
                 />
               </DialogContent>
             </Dialog>
@@ -208,7 +286,7 @@ export default function UsersPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-3xl font-bold text-primary">
-                    {users.filter((u) => u.status === "active").length}
+                    {users.filter((u) => u.status === "Active").length}
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">Active users count</p>
                 </CardContent>
@@ -227,7 +305,7 @@ export default function UsersPage() {
                     <TableHeader className="bg-muted/30">
                       <TableRow className="hover:bg-transparent">
                         <TableHead className="font-semibold">Name</TableHead>
-                        <TableHead className="font-semibold">Username</TableHead>
+                        <TableHead className="font-semibold">Email</TableHead>
                         <TableHead className="font-semibold">Role</TableHead>
                         <TableHead className="font-semibold">Contact</TableHead>
                         <TableHead className="font-semibold">Status</TableHead>
@@ -236,98 +314,118 @@ export default function UsersPage() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {users.map((user) => (
-                        <TableRow key={user.id} className="hover:bg-muted/20">
-                          <TableCell>
-                            <div>
-                              <p className="font-medium text-foreground">{user.name}</p>
-                              <p className="text-xs text-muted-foreground">{user.address}</p>
-                            </div>
+                      {loading ? <TableRow>
+                          <TableCell colSpan={7} className="text-center py-8">
+                            <p className="text-muted-foreground">Loading users...</p>
                           </TableCell>
-                          <TableCell>
-                            <span className="text-sm text-foreground">{user.username}</span>
+                        </TableRow> : users.length === 0 ? <TableRow>
+                          <TableCell colSpan={7} className="text-center py-8">
+                            <p className="text-muted-foreground">No users found. Create a new user to get started.</p>
                           </TableCell>
-                          <TableCell>
-                            <span
-                              className={`text-xs px-2 py-1 rounded font-medium ${
-                                user.role === "SuperAdmin"
-                                  ? "bg-primary/20 text-primary"
-                                  : user.role === "Admin"
-                                    ? "bg-secondary/20 text-secondary"
-                                    : "bg-muted/50 text-muted-foreground"
-                              }`}
-                            >
-                              {user.role}
-                            </span>
-                          </TableCell>
-                          <TableCell>
-                            <span className="text-sm text-foreground">{user.contact}</span>
-                          </TableCell>
-                          <TableCell>
-                            <span
-                              className={`text-xs px-2 py-1 rounded ${
-                                user.status === "active"
-                                  ? "bg-primary/20 text-primary"
-                                  : "bg-muted/50 text-muted-foreground"
-                              }`}
-                            >
-                              {user.status}
-                            </span>
-                          </TableCell>
-                          <TableCell>
-                            <span className="text-sm text-muted-foreground">{user.createdAt}</span>
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <div className="flex gap-2 justify-end">
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="border-border/50 bg-transparent text-xs h-7"
-                                onClick={() => handleEditUser(user)}
+                        </TableRow> : users.map((user) => (
+                          <TableRow key={user._id} className="hover:bg-muted/20">
+                            <TableCell>
+                              <div className="flex items-center gap-3">
+                                <Avatar className="w-8 h-8">
+                                  <AvatarImage src={user.image} alt={user.name} />
+                                  <AvatarFallback>{user.name?.substring(0, 2).toUpperCase()}</AvatarFallback>
+                                </Avatar>
+                                <div>
+                                  <p className="font-medium text-foreground">{user.name}</p>
+                                  <p className="text-xs text-muted-foreground">{user.address}</p>
+                                </div>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <span className="text-sm text-foreground">{user.email}</span>
+                            </TableCell>
+                            <TableCell>
+                              <span
+                                className={`text-xs px-2 py-1 rounded font-medium ${
+                                  user.role === "SuperAdmin"
+                                    ? "bg-primary/20 text-primary"
+                                    : user.role === "Admin"
+                                      ? "bg-secondary/20 text-secondary"
+                                      : "bg-muted/50 text-muted-foreground"
+                                }`}
                               >
-                                ✏️ Edit
-                              </Button>
-                              {deleteConfirm === user.id ? (
-                                <>
-                                  <Button
-                                    size="sm"
-                                    className="bg-destructive hover:bg-destructive/90 text-xs h-7"
-                                    onClick={() => handleDeleteUser(user.id)}
-                                  >
-                                    Confirm
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    className="border-border/50 bg-transparent text-xs h-7"
-                                    onClick={() => setDeleteConfirm(null)}
-                                  >
-                                    Cancel
-                                  </Button>
-                                </>
-                              ) : (
+                                {user.role}
+                              </span>
+                            </TableCell>
+                            <TableCell>
+                              <span className="text-sm text-foreground">{user.phone}</span>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-2">
+                                <span>{user.status}</span>
                                 <Button
                                   size="sm"
                                   variant="outline"
-                                  className="border-destructive/50 bg-destructive/5 text-destructive hover:bg-destructive/10 text-xs h-7"
-                                  onClick={() => setDeleteConfirm(user.id)}
+                                  onClick={() => handleStatusToggle(user)}
+                                  disabled={updatingStatusId === user._id}
                                 >
-                                  🗑️ Delete
+                                  {updatingStatusId === user._id
+                                    ? '...'
+                                    : user.status === 'Active'
+                                    ? 'Deactivate'
+                                    : 'Activate'}
                                 </Button>
-                              )}
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <span className="text-sm text-muted-foreground">
+                                {new Date(user.createdAt).toLocaleDateString()}
+                              </span>
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <div className="flex gap-2 justify-end">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="border-border/50 bg-transparent text-xs h-7"
+                                  onClick={() => handleEditUser(user)}
+                                  disabled={submitting}
+                                >
+                                  ✏️ Edit
+                                </Button>
+                                {deleteConfirm === user._id ? (
+                                  <>
+                                    <Button
+                                      size="sm"
+                                      className="bg-destructive hover:bg-destructive/90 text-xs h-7"
+                                      onClick={() => handleDeleteUser(user._id)}
+                                      disabled={submitting}
+                                    >
+                                      Confirm
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      className="border-border/50 bg-transparent text-xs h-7"
+                                      onClick={() => setDeleteConfirm(null)}
+                                      disabled={submitting}
+                                    >
+                                      Cancel
+                                    </Button>
+                                  </>
+                                ) : (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="border-destructive/50 bg-destructive/5 text-destructive hover:bg-destructive/10 text-xs h-7"
+                                    onClick={() => setDeleteConfirm(user._id)}
+                                    disabled={submitting}
+                                  >
+                                    🗑️ Delete
+                                  </Button>
+                                )}
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
                     </TableBody>
                   </Table>
                 </div>
-
-                {users.length === 0 && (
-                  <div className="text-center py-8">
-                    <p className="text-muted-foreground">No users found. Create a new user to get started.</p>
-                  </div>
-                )}
               </CardContent>
             </Card>
           </div>
