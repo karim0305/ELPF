@@ -52,7 +52,7 @@ interface UpdateUserData {
   cnic: string;
   address: string;
   image: string;
-  role: "SuperAdmin" | "Admin";
+  role: "SuperAdmin" | "Admin" | "User";
   status: "Active" | "Inactive";
   password?: string;
 }
@@ -305,6 +305,7 @@ export function UserFormModal({ initialData, onSubmit, onClose, isLoading = fals
                 <SelectContent>
                   <SelectItem value="SuperAdmin">SuperAdmin</SelectItem>
                   <SelectItem value="Admin">Admin</SelectItem>
+                  <SelectItem value="User">User</SelectItem>
                 </SelectContent>
               </Select>
               <FormMessage />

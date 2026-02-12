@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -14,6 +14,10 @@ export default function LoginPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [userRole, setUserRole] = useState("")
+
+
+ 
+
   const [isLoading, setIsLoading] = useState(false)
 
   const handleLogin = (e: React.FormEvent) => {

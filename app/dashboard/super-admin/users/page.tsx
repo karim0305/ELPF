@@ -16,7 +16,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { UserFormModal } from "@/components/user-form-modal"
-import { getSuperAdmins, addSuperAdmin, updateSuperAdmin, deleteSuperAdmin } from "@/app/api/fapi"
+import { getUsers, addUser, updateUser, deleteUser } from "@/app/api/fapi"
 
 const superAdminNav = [
   { label: "All Mills", href: "/dashboard/super-admin/mills", icon: "🏭" },
@@ -56,7 +56,7 @@ export default function UsersPage() {
     try {
       setLoading(true)
       setError(null)
-      const response = await getSuperAdmins()
+      const response = await getUsers()
       setUsers(response.data.data || response.data || [])
     } catch (err: any) {
       const errorMessage = err.response?.data?.message || "Failed to fetch users"
@@ -67,12 +67,12 @@ export default function UsersPage() {
       setLoading(false)
     }
   }
-
+ 
   const handleCreateUser = async (formData: any) => {
     try {
       setSubmitting(true)
       console.log('➕ Creating User:', formData)
-      const response = await addSuperAdmin(formData)
+      const response = await addUser(formData)
       const newUser = response.data.data || response.data
       console.log('✅ User Created:', newUser)
       setUsers([...users, newUser])
@@ -113,7 +113,7 @@ export default function UsersPage() {
       }
       
       console.log('🔄 Updating User:', { userId: editingUser._id, data: updateData })
-      const response = await updateSuperAdmin(editingUser._id, updateData)
+      const response = await updateUser(editingUser._id, updateData)
       const updatedUser = response.data.data || response.data
       console.log('✅ User Updated:', updatedUser)
       
@@ -140,7 +140,7 @@ export default function UsersPage() {
     try {
       setSubmitting(true)
       console.log('🗑️ Deleting User:', userId)
-      await deleteSuperAdmin(userId)
+      await deleteUser(userId)
       console.log('✅ User Deleted')
       setUsers(users.filter((u) => u._id !== userId))
       setDeleteConfirm(null)
@@ -175,8 +175,8 @@ export default function UsersPage() {
       setUpdatingStatusId(user._id)
       const newStatus = user.status === "Active" ? "Inactive" : "Active"
       console.log('🔄 Toggling Status:', { userId: user._id, from: user.status, to: newStatus })
-      
-      const response = await updateSuperAdmin(user._id, { status: newStatus })
+
+      const response = await updateUser(user._id, { status: newStatus })
       const updatedUser = response.data.data || response.data
       console.log('✅ Status Updated:', updatedUser)
       

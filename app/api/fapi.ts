@@ -1,8 +1,8 @@
 import axios from 'axios';
 
 // Backend API Base URL
-//  const baseUrl = 'https://elpb.vercel.app/elpapi';
-const baseUrl = 'http://localhost:3010/elpapi';
+  const baseUrl = 'https://elpb.vercel.app/elpapi';
+// const baseUrl = 'http://localhost:3010/elpapi';
 
 // Log API calls in development
 if (typeof window !== 'undefined') {
@@ -51,7 +51,7 @@ export const getUserById = (id: string) =>
   axios.get(`${baseUrl}/users/${id}`);
 
 export const updateUser = (id: string, data: any) =>
-  axios.put(`${baseUrl}/users/${id}`, data);
+  axios.patch(`${baseUrl}/users/${id}`, data);
 
 export const deleteUser = (id: string) =>
   axios.delete(`${baseUrl}/users/${id}`);
