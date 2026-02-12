@@ -8,39 +8,63 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useRouter } from "next/navigation"
+import { login } from "@/app/api/fapi" // adjust path
+import { useToast } from "@/hooks/use-toast"
 
 export default function LoginPage() {
   const router = useRouter()
+  const { toast } = useToast()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-  const [userRole, setUserRole] = useState("")
-
-
- 
-
   const [isLoading, setIsLoading] = useState(false)
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!email || !password || !userRole) return
+
+    if (!email || !password) {
+      toast({
+        title: "Missing Fields",
+        description: "Please enter both email and password.",
+        variant: "destructive",
+      })
+      return
+    }
 
     setIsLoading(true)
-    // Simulate login delay
-    setTimeout(() => {
-      switch (userRole) {
+
+    try {
+      const response = await login({ email, password })
+      const { access_token, user } = response.data
+      localStorage.setItem("token", access_token)
+      localStorage.setItem("user", JSON.stringify(user))
+      toast({
+        title: "Login Successful",
+        description: `Welcome, ${user.name || user.email}!`,
+        variant: "default",
+      })
+      switch (user.role) {
         case "super-admin":
           router.push("/dashboard/super-admin")
           break
-        case "admin":
+        case "Admin":
           router.push("/dashboard/admin")
           break
-        case "user":
+        case "User":
           router.push("/dashboard/user")
           break
         default:
-          setIsLoading(false)
+          router.push("/")
       }
-    }, 500)
+    } catch (error: any) {
+      console.error("Login Error:", error.response?.data || error.message)
+      toast({
+        title: "Login Failed",
+        description: error.response?.data?.message || error.message || "Login failed.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -76,20 +100,6 @@ export default function LoginPage() {
                 />
               </div>
 
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">User Role</label>
-                <Select value={userRole} onValueChange={setUserRole}>
-                  <SelectTrigger className="bg-input border-border/50">
-                    <SelectValue placeholder="Select your role" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="super-admin">Super Administrator</SelectItem>
-                    <SelectItem value="admin">Administrator</SelectItem>
-                    <SelectItem value="user">User</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
               {/* Password Input */}
               <div className="space-y-2">
                 <label className="text-sm font-medium text-foreground">Password</label>
@@ -113,22 +123,22 @@ export default function LoginPage() {
               </Button>
 
               {/* Forgot Password Link */}
-              <div className="text-center">
+              {/* <div className="text-center">
                 <a href="#" className="text-sm text-primary hover:text-primary/80 transition-colors">
                   Forgot your password?
                 </a>
-              </div>
+              </div> */}
             </form>
           </CardContent>
         </Card>
 
         {/* Demo Info */}
-        <div className="mt-6 p-4 bg-secondary/10 border border-secondary/20 rounded-lg">
+        {/* <div className="mt-6 p-4 bg-secondary/10 border border-secondary/20 rounded-lg">
           <p className="text-sm text-muted-foreground">
             <span className="font-semibold text-secondary">Demo Login:</span> Use any email and password with a selected
             role to explore the system.
           </p>
-        </div>
+        </div> */}
       </div>
     </div>
   )

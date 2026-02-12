@@ -21,9 +21,21 @@ export function TopNav({ items, userRole }: TopNavProps) {
   const router = useRouter()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
-  const handleLogout = () => {
-    router.push("/")
-  }
+ const handleLogout = () => {
+  // ✅ Remove specific items
+  localStorage.removeItem("token")
+  localStorage.removeItem("user")
+
+  // ✅ OR clear everything (if safe)
+  // localStorage.clear()
+
+  // Optional: clear sessionStorage too
+  sessionStorage.clear()
+
+  // Redirect to login
+  router.push("/")
+}
+
 
   return (
     <nav className="bg-card border-b border-border/50 sticky top-0 z-50">

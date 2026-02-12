@@ -26,10 +26,21 @@ export function SidebarNav({ items, title, userRole }: SidebarNavProps) {
   const toggleExpand = (label: string) => {
     setExpandedItems((prev) => (prev.includes(label) ? prev.filter((item) => item !== label) : [...prev, label]))
   }
+const handleLogout = () => {
+  // ✅ Remove specific items
+  localStorage.removeItem("token")
+  localStorage.removeItem("user")
 
-  const handleLogout = () => {
-    router.push("/")
-  }
+  // ✅ OR clear everything (if safe)
+  // localStorage.clear()
+
+  // Optional: clear sessionStorage too
+  sessionStorage.clear()
+
+  // Redirect to login
+  router.push("/")
+}
+
 
   return (
     <div className="w-64 bg-card border-r border-border/50 flex flex-col h-screen">
@@ -80,7 +91,7 @@ export function SidebarNav({ items, title, userRole }: SidebarNavProps) {
               {/* Submenu */}
               {hasChildren && isExpanded && (
                 <div className="space-y-1 mt-2">
-                  {item.children.map((child) => {
+                  {item.children?.map((child) => {
                     const isChildActive =
                       child.href && (pathname === child.href || pathname.startsWith(child.href + "/"))
                     return (
