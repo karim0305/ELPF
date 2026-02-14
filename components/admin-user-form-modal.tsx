@@ -1,14 +1,17 @@
 "use client"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useForm } from "react-hook-form"
 import { useToast } from "@/hooks/use-toast"
+import { useSelector } from "react-redux"
+import { RootState } from "@/redux/store"
 
 export interface MillFormData {
   name: string;
+  millid: string;
   email: string;
   phone: string;
   cnic: string;
@@ -16,12 +19,13 @@ export interface MillFormData {
   image?: string;
   status: "Active" | "Inactive";
   password?: string;
-  role: "SuperAdmin" | "Admin";
+  role: "Admin" | "User";
 }
 
 interface SuperAdmin {
   _id: string;
   name: string;
+  millid: string;
   email: string;
   phone: string;
   cnic: string;
@@ -29,30 +33,32 @@ interface SuperAdmin {
   image: string;
   status: "Active" | "Inactive";
   password: string;
-  role: "SuperAdmin" | "Admin";
+  role: "Admin" | "User";
   createdAt: string;
 }
 
 interface CreateUserData {
   name: string;
   email: string;
+  millid: string;
   phone: string;
   cnic: string;
   address: string;
   image: string;
-  role: "SuperAdmin" | "Admin";
+  role: "Admin" | "User";
   status: "Active" | "Inactive";
   password: string;
 }
 
 interface UpdateUserData {
   name: string;
+  millid: string;
   email: string;
   phone: string;
   cnic: string;
   address: string;
   image: string;
-  role: "SuperAdmin" | "Admin" | "User";
+  role: "Admin" | "User";
   status: "Active" | "Inactive";
   password?: string;
 }
@@ -65,14 +71,30 @@ interface UserFormModalProps {
 }
 
 export function UserFormModal({ initialData, onSubmit, onClose, isLoading = false }: UserFormModalProps) {
+  const user = useSelector((state: RootState) => state.users.currentUser);
   const { toast } = useToast()
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [millid, setMillid] = useState<string>("")
   const [preview, setPreview] = useState<string>(initialData?.image || "")
+  useEffect(() => {
+        if (user) {
+        
+           const millid = user.millid?._id   || "Mill";
+          setMillid(millid);
+          // const userName = user.name || "User";
+          // const millName = user.millid?.millname || "Mill";
+          // setUserName(userName);
+          // setMillName(millName);
+          // console.log("Current User in AdminLayout:", user);
+          // console.log("User Name:", userName);
+          // console.log("Mill Name:", millName);
+        }  }, [user]);
 
   const form = useForm<MillFormData>({
     defaultValues: initialData
       ? {
           name: initialData.name || "",
+          millid: initialData.millid || millid,
           email: initialData.email || "",
           phone: initialData.phone || "",
           cnic: initialData.cnic || "",
@@ -138,6 +160,7 @@ export function UserFormModal({ initialData, onSubmit, onClose, isLoading = fals
         // For update: password is optional
         const submitData: UpdateUserData = {
           name: payload.name,
+            millid: payload.millid,
           email: payload.email,
           phone: payload.phone,
           cnic: payload.cnic,
@@ -154,6 +177,7 @@ export function UserFormModal({ initialData, onSubmit, onClose, isLoading = fals
         // For create: password is required
         const submitData: CreateUserData = {
           name: payload.name,
+          millid:  millid,
           email: payload.email,
           phone: payload.phone,
           cnic: payload.cnic,
@@ -303,7 +327,7 @@ export function UserFormModal({ initialData, onSubmit, onClose, isLoading = fals
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="SuperAdmin">SuperAdmin</SelectItem>
+                 
                   <SelectItem value="Admin">Admin</SelectItem>
                   <SelectItem value="User">User</SelectItem>
                 </SelectContent>
