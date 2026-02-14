@@ -44,7 +44,7 @@ export default function LoginPage() {
         setCurrentUser({
           user: {
             _id: user._id,
-            millid: user.millid,
+            millid: user.millid ?? null, 
             name: user.name,
             email: user.email,
             phone: user.phone,
@@ -54,7 +54,6 @@ export default function LoginPage() {
             image: user.image,
             lastLogin: user.lastLogin,
             status: user.status,
-            password: user.password,
             otp: user.otp,
             otpExpiresAt: user.otpExpiresAt,
             createdAt: user.createdAt,
@@ -65,7 +64,8 @@ export default function LoginPage() {
       );
 
          }
-
+console.log("User Name:", user.name);
+console.log("Mill Name:", user.millid?.millname);
       toast({
         title: "Login Successful",
         description: `Welcome, ${user.name || user.email}!`,

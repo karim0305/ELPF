@@ -10,11 +10,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { SidebarNav } from "@/components/sidebar-nav"
 import { AdminLayout } from "../../AdminLayout"
+import { useSelector } from "react-redux"
+import { RootState } from "@/redux/store"
 
 interface Device {
   id: string
@@ -25,21 +27,27 @@ interface Device {
   createdDate: string
 }
 
-const adminNav = [
-  { label: "Dashboard", href: "/dashboard/admin", icon: "📊" },
-  {
-    label: "Manage",
-    icon: "⚙️",
-    children: [
-      { label: "Manage User", href: "/dashboard/admin/manage/users", icon: "👥" },
-      { label: "Manage LP", href: "/dashboard/admin/manage/loading-points", icon: "📍" },
-      { label: "Manage Haulage", href: "/dashboard/admin/manage/haulage", icon: "🚚" },
-    ],
-  },
-  { label: "Approve", href: "/dashboard/admin/approvals", icon: "✓" },
-]
+
 
 export default function DevicesPage() {
+  const user = useSelector((state: RootState) => state.users.currentUser);
+ const [userName, setUserName] = useState("");
+ const [millName, setMillName] = useState("");
+
+    useEffect(() => {
+      if (user) {
+        const userName = user.name || "User";
+        const millName = user.millid?.millname || "Mill";
+        setUserName(userName);
+        setMillName(millName);
+        console.log("Current User in AdminLayout:", user);
+        console.log("User Name:", userName);
+        console.log("Mill Name:", millName);
+      }
+     
+     
+    }, [user]);
+
   const [devices, setDevices] = useState<Device[]>([
     {
       id: "DEV-001",
@@ -116,7 +124,7 @@ export default function DevicesPage() {
   }
 
   return (
-    <AdminLayout title="Manage Devices">
+     <AdminLayout username={userName} millName={millName} >
       <div className="flex bg-background min-h-screen">
         <div className="flex-1 flex flex-col overflow-hidden p-8">
           <div className="grid gap-6">

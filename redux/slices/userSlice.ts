@@ -1,8 +1,24 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
+export interface Mill {
+  _id: string;
+  millcode: string;
+  millname: string;
+  focalperson: string;
+  cnic: string;
+  phone: string;
+  address?: string;
+  email: string;
+  profilePicture: string;
+  status: string;
+  lastLogin?: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
 export interface User {
   _id?: string;                 // MongoDB ObjectId
-  millid?: string;              // Reference to another User (ObjectId as string)
+  millid?: Mill;              // Reference to another User (ObjectId as string)
   name: string;
   email: string;
   phone: string;
@@ -12,7 +28,6 @@ export interface User {
   image?: string;               // Default placeholder
   lastLogin?: Date;
   status: "Active" | "Inactive";
-  password: string;
   otp?: string;
   otpExpiresAt?: Date;
   createdAt?: Date;

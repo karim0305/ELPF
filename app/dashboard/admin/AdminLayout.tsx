@@ -6,7 +6,8 @@ import { SidebarNav } from "@/components/sidebar-nav"
 
 interface AdminLayoutProps {
   children: ReactNode
-  title?: string
+  username?: string
+  millName?: string
 }
 
 const adminNav = [
@@ -25,22 +26,22 @@ const adminNav = [
   { label: "Approve", href: "/dashboard/admin/approvals", icon: "✓" },
 ]
 
-export function AdminLayout({ children, title }: AdminLayoutProps) {
+export function AdminLayout({ children, username, millName }: AdminLayoutProps) {
   return (
     <div className="flex bg-background min-h-screen">
       <SidebarNav title="admin" items={adminNav} userRole="admin" />
      <div className="flex-1 flex flex-col overflow-hidden">
   {/* Optional Top Bar */}
-  {title && (
+  {username && (
     <div className="bg-card border-b border-border/50 px-8 py-4 flex justify-between items-center">
       {/* Left: Page Title */}
       <div>
-        <h1 className="text-2xl font-bold text-foreground">{title}</h1>
+        <h1 className="text-2xl font-bold text-foreground">{millName}</h1>
       </div>
 
       {/* Right: User Greeting */}
       <div className="text-foreground font-medium">
-        Welcome, Mr. Momin{/* Replace username with your dynamic value */}
+        Welcome, {username}{/* Replace username with your dynamic value */}
       </div>
     </div>
   )}

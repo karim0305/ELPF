@@ -10,13 +10,15 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { SidebarNav } from "@/components/sidebar-nav"
 import { LocationPicker } from "@/components/location-picker"
 import { AdminLayout } from "../../AdminLayout"
+import { RootState } from "@/redux/store"
+import { useSelector } from "react-redux"
 
 interface LoadingPoint {
   id: string
@@ -31,21 +33,28 @@ interface LoadingPoint {
   createdDate: string
 }
 
-const adminNav = [
-  { label: "Dashboard", href: "/dashboard/admin", icon: "📊" },
-  {
-    label: "Manage",
-    icon: "⚙️",
-    children: [
-      { label: "Manage User", href: "/dashboard/admin/manage/users", icon: "👥" },
-      { label: "Manage LP", href: "/dashboard/admin/manage/loading-points", icon: "📍" },
-      { label: "Manage Haulage", href: "/dashboard/admin/manage/haulage", icon: "🚚" },
-    ],
-  },
-  { label: "Approve", href: "/dashboard/admin/approvals", icon: "✓" },
-]
+
 
 export default function ManageLPPage() {
+const user = useSelector((state: RootState) => state.users.currentUser);
+ const [userName, setUserName] = useState("");
+ const [millName, setMillName] = useState("");
+
+    useEffect(() => {
+      if (user) {
+        const userName = user.name || "User";
+        const millName = user.millid?.millname || "Mill";
+        setUserName(userName);
+        setMillName(millName);
+        console.log("Current User in AdminLayout:", user);
+        console.log("User Name:", userName);
+        console.log("Mill Name:", millName);
+      }
+     
+     
+    }, [user]);
+
+
   const [lps, setLps] = useState<LoadingPoint[]>([
     {
       id: "LP-001",
@@ -157,7 +166,7 @@ export default function ManageLPPage() {
   }
 
   return (
-    <AdminLayout title="Manage Loading Points">
+     <AdminLayout username={userName} millName={millName} >
     <div className="flex bg-background min-h-screen">
       <div className="flex-1 flex flex-col overflow-hidden">
         <div className="flex-1 overflow-auto p-8">
