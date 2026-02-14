@@ -14,6 +14,7 @@ const adminNav = [
       { label: "Manage User", href: "/dashboard/admin/manage/users", icon: "👥" },
       { label: "Manage LP", href: "/dashboard/admin/manage/loading-points", icon: "📍" },
       { label: "Manage Haulage", href: "/dashboard/admin/manage/haulage", icon: "🚚" },
+      { label: "Manage Devices", href: "/dashboard/admin/manage/devices", icon: "�" },
     ],
   },
   { label: "Approve", href: "/dashboard/admin/approvals", icon: "✓" },
@@ -22,7 +23,7 @@ const adminNav = [
 export default function AdminDashboard() {
   return (
     <div className="flex bg-background min-h-screen">
-      <SidebarNav items={adminNav} userRole="admin" />
+      <SidebarNav title="admin" items={adminNav} userRole="admin" />
 
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Top Bar */}

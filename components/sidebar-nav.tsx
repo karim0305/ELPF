@@ -4,6 +4,8 @@ import { cn } from "@/lib/utils"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { useState } from "react"
+import { logoutUser } from "@/redux/slices/userSlice"
+import { useDispatch } from "react-redux"
 
 interface NavItem {
   label: string
@@ -18,7 +20,9 @@ interface SidebarNavProps {
   userRole: string
 }
 
+
 export function SidebarNav({ items, title, userRole }: SidebarNavProps) {
+  const dispatch = useDispatch();
   const pathname = usePathname()
   const router = useRouter()
   const [expandedItems, setExpandedItems] = useState<string[]>([])
@@ -28,8 +32,7 @@ export function SidebarNav({ items, title, userRole }: SidebarNavProps) {
   }
 const handleLogout = () => {
   // ✅ Remove specific items
-  localStorage.removeItem("token")
-  localStorage.removeItem("user")
+    dispatch(logoutUser());
 
   // ✅ OR clear everything (if safe)
   // localStorage.clear()

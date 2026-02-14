@@ -4,6 +4,8 @@ import { SidebarNav } from "@/components/sidebar-nav"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { useSelector } from "react-redux";
+import type { RootState } from "@/redux/store";
 
 const superAdminNav = [
   { label: "All Mills", href: "/dashboard/super-admin/mills", icon: "🏭" },
@@ -11,20 +13,32 @@ const superAdminNav = [
 ]
 
 export default function SuperAdminDashboard() {
+  const user = useSelector((state: RootState) => state.users.currentUser);
+  console.log(user);
   return (
     <div className="flex bg-background min-h-screen">
       {/* Sidebar Navigation */}
-      <SidebarNav items={superAdminNav} userRole="super-admin" />
+      <SidebarNav title="Superadmin Dashboard" items={superAdminNav} userRole="super-admin" />
 
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Top Bar */}
-        <div className="bg-card border-b border-border/50 px-8 py-4 flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">Super Administrator Dashboard</h1>
-            <p className="text-sm text-muted-foreground">Complete system oversight and management</p>
-          </div>
+       <div className="bg-card border-b border-border/50 px-8 py-4 flex justify-between items-center">
+  <div>
+    <h1 className="text-2xl font-bold text-foreground">
+      Super Administrator Dashboard
+    </h1>
+    <p className="text-sm text-muted-foreground">
+      Complete system oversight and management
+    </p>
+  </div>
 
-        </div>
+  <div className="text-right">
+    <p className="text-2xl font-bold text-muted-foreground ">
+      Welcome Mr. {user?.name || "User"}
+    </p>
+  </div>
+</div>
+
 
         {/* Main Content */}
         <div className="flex-1 overflow-auto p-8">

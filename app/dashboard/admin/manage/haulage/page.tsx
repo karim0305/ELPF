@@ -105,7 +105,7 @@ export default function ManageHaulagePages() {
 
   return (
     <div className="flex bg-background min-h-screen">
-      <SidebarNav items={adminNav} userRole="admin" />
+      <SidebarNav  items={adminNav} userRole="admin" />
 
       <div className="flex-1 flex flex-col overflow-hidden p-8">
         <div className="grid gap-6">

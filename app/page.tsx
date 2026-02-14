@@ -10,6 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useRouter } from "next/navigation"
 import { login } from "@/app/api/fapi" // adjust path
 import { useToast } from "@/hooks/use-toast"
+import { useDispatch } from "react-redux"
+import { setCurrentUser, setLoading } from "@/redux/slices/userSlice"
 
 export default function LoginPage() {
   const router = useRouter()
@@ -17,10 +19,10 @@ export default function LoginPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
-
+  const dispatch = useDispatch();
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
-
+    
     if (!email || !password) {
       toast({
         title: "Missing Fields",
@@ -33,17 +35,44 @@ export default function LoginPage() {
     setIsLoading(true)
 
     try {
-      const response = await login({ email, password })
-      const { access_token, user } = response.data
-      localStorage.setItem("token", access_token)
-      localStorage.setItem("user", JSON.stringify(user))
+      dispatch(setLoading(true));
+      const response = await login({ email, password });
+      const { access_token, user } = response.data;
+         if (access_token) {
+            // ✅ Save to Redux
+      dispatch(
+        setCurrentUser({
+          user: {
+            _id: user._id,
+            millid: user.millid,
+            name: user.name,
+            email: user.email,
+            phone: user.phone,
+            cnic: user.cnic,
+            address: user.address,
+            role: user.role,
+            image: user.image,
+            lastLogin: user.lastLogin,
+            status: user.status,
+            password: user.password,
+            otp: user.otp,
+            otpExpiresAt: user.otpExpiresAt,
+            createdAt: user.createdAt,
+            updatedAt: user.updatedAt,
+          },
+          token: access_token,
+        })
+      );
+
+         }
+
       toast({
         title: "Login Successful",
         description: `Welcome, ${user.name || user.email}!`,
         variant: "default",
       })
       switch (user.role) {
-        case "super-admin":
+        case "SuperAdmin":
           router.push("/dashboard/super-admin")
           break
         case "Admin":
