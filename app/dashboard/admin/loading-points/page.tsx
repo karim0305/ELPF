@@ -14,6 +14,7 @@ import { useState } from "react"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { SidebarNav } from "@/components/sidebar-nav"
+import { AdminLayout } from "../AdminLayout"
 
 interface LoadingPoint {
   id: string
@@ -23,19 +24,7 @@ interface LoadingPoint {
   createdDate: string
 }
 
-const adminNav = [
-  { label: "Dashboard", href: "/dashboard/admin", icon: "📊" },
-  {
-    label: "Manage",
-    icon: "⚙️",
-    children: [
-      { label: "Manage User", href: "/dashboard/admin/manage/users", icon: "👥" },
-      { label: "Manage LP", href: "/dashboard/admin/manage/loading-points", icon: "📍" },
-      { label: "Manage Haulage", href: "/dashboard/admin/manage/haulage", icon: "🚚" },
-    ],
-  },
-  { label: "Approve", href: "/dashboard/admin/approvals", icon: "✓" },
-]
+
 
 export default function LoadingPointsPage() {
   const [loadingPoints, setLoadingPoints] = useState<LoadingPoint[]>([
@@ -86,9 +75,8 @@ export default function LoadingPointsPage() {
   }
 
   return (
+    <AdminLayout title="Manage Loading Points">
     <div className="flex bg-background min-h-screen">
-      <SidebarNav items={adminNav} userRole="admin" />
-
       <div className="flex-1 flex flex-col overflow-hidden p-8">
         <div className="grid gap-6">
           {/* KPI Cards */}
@@ -243,5 +231,6 @@ export default function LoadingPointsPage() {
         </div>
       </div>
     </div>
+    </AdminLayout>
   )
 }

@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { SidebarNav } from "@/components/sidebar-nav"
+import { AdminLayout } from "../../AdminLayout"
 
 interface ManageUser {
   id: string
@@ -135,8 +136,9 @@ export default function ManageUsersPage() {
   }
 
   return (
+    <AdminLayout title="Manage Users">
     <div className="flex bg-background min-h-screen">
-      <SidebarNav items={adminNav} userRole="admin" />
+  
 
       <div className="flex-1 flex flex-col overflow-hidden">
         <div className="flex-1 overflow-auto p-8">
@@ -332,5 +334,6 @@ export default function ManageUsersPage() {
         </div>
       </div>
     </div>
+    </AdminLayout>
   )
 }

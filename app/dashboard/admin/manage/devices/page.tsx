@@ -14,6 +14,7 @@ import { useState } from "react"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { SidebarNav } from "@/components/sidebar-nav"
+import { AdminLayout } from "../../AdminLayout"
 
 interface Device {
   id: string
@@ -115,16 +116,15 @@ export default function DevicesPage() {
   }
 
   return (
-    <div className="flex bg-background min-h-screen">
-      <SidebarNav items={adminNav} userRole="admin" />
-
-      <div className="flex-1 flex flex-col overflow-hidden p-8">
-        <div className="grid gap-6">
-          {/* KPI Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Card className="bg-card border-border/50">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Total Devices</CardTitle>
+    <AdminLayout title="Manage Devices">
+      <div className="flex bg-background min-h-screen">
+        <div className="flex-1 flex flex-col overflow-hidden p-8">
+          <div className="grid gap-6">
+            {/* KPI Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Card className="bg-card border-border/50">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">Total Devices</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-3xl font-bold text-primary">{devices.length}</div>
@@ -284,5 +284,6 @@ export default function DevicesPage() {
         </div>
       </div>
     </div>
+    </AdminLayout>
   )
 }

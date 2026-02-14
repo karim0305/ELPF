@@ -4,27 +4,15 @@ import { SidebarNav } from "@/components/sidebar-nav"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { AdminLayout } from "./AdminLayout"
 
-const adminNav = [
-  { label: "Dashboard", href: "/dashboard/admin", icon: "📊" },
-  {
-    label: "Manage",
-    icon: "⚙️",
-    children: [
-      { label: "Manage User", href: "/dashboard/admin/manage/users", icon: "👥" },
-      { label: "Manage LP", href: "/dashboard/admin/manage/loading-points", icon: "📍" },
-      { label: "Manage Haulage", href: "/dashboard/admin/manage/haulage", icon: "🚚" },
-      { label: "Manage Devices", href: "/dashboard/admin/manage/devices", icon: "�" },
-    ],
-  },
-  { label: "Approve", href: "/dashboard/admin/approvals", icon: "✓" },
-]
+
 
 export default function AdminDashboard() {
   return (
+    
+      <AdminLayout>
     <div className="flex bg-background min-h-screen">
-      <SidebarNav title="admin" items={adminNav} userRole="admin" />
-
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Top Bar */}
         <div className="bg-card border-b border-border/50 px-8 py-4 flex justify-between items-center">
@@ -248,5 +236,6 @@ export default function AdminDashboard() {
         </div>
       </div>
     </div>
+       </AdminLayout>
   )
 }

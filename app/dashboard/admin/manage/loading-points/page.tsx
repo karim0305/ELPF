@@ -16,6 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { SidebarNav } from "@/components/sidebar-nav"
 import { LocationPicker } from "@/components/location-picker"
+import { AdminLayout } from "../../AdminLayout"
 
 interface LoadingPoint {
   id: string
@@ -156,9 +157,8 @@ export default function ManageLPPage() {
   }
 
   return (
+    <AdminLayout title="Manage Loading Points">
     <div className="flex bg-background min-h-screen">
-      <SidebarNav items={adminNav} userRole="admin" />
-
       <div className="flex-1 flex flex-col overflow-hidden">
         <div className="flex-1 overflow-auto p-8">
           <div className="grid gap-6">
@@ -390,5 +390,6 @@ export default function ManageLPPage() {
         </div>
       </div>
     </div>
+    </AdminLayout>
   )
 }

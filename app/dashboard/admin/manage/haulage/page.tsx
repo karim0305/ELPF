@@ -14,6 +14,7 @@ import { useState } from "react"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { SidebarNav } from "@/components/sidebar-nav"
+import { AdminLayout } from "../../AdminLayout"
 
 interface Haulage {
   id: string
@@ -104,8 +105,9 @@ export default function ManageHaulagePages() {
   }
 
   return (
+        <AdminLayout title="Manage Haulage">
     <div className="flex bg-background min-h-screen">
-      <SidebarNav  items={adminNav} userRole="admin" />
+
 
       <div className="flex-1 flex flex-col overflow-hidden p-8">
         <div className="grid gap-6">
@@ -258,5 +260,6 @@ export default function ManageHaulagePages() {
         </div>
       </div>
     </div>
+    </AdminLayout>
   )
 }
