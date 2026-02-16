@@ -1,9 +1,11 @@
 "use client"
 
 import { cn } from "@/lib/utils"
+import { logoutUser } from "@/redux/slices/userSlice"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { useState } from "react"
+import { useDispatch } from "react-redux"
 
 interface NavItem {
   label: string
@@ -17,24 +19,24 @@ interface TopNavProps {
 }
 
 export function TopNav({ items, userRole }: TopNavProps) {
+    const dispatch = useDispatch();
   const pathname = usePathname()
   const router = useRouter()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
- const handleLogout = () => {
-  // ✅ Remove specific items
-  localStorage.removeItem("token")
-  localStorage.removeItem("user")
+const handleLogout = () => {
+  // 1️⃣ Remove cookie
+  document.cookie = "token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
 
-  // ✅ OR clear everything (if safe)
-  // localStorage.clear()
+  // 2️⃣ Clear redux state
+  dispatch(logoutUser());
 
-  // Optional: clear sessionStorage too
-  sessionStorage.clear()
+  // 3️⃣ Clear session storage (optional)
+  sessionStorage.clear();
 
-  // Redirect to login
-  router.push("/")
-}
+  // 4️⃣ Redirect to login
+  router.replace("/");
+};
 
 
   return (

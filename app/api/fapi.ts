@@ -84,8 +84,12 @@ export const getAllDevices = () =>
 export const getDeviceByImei = (imei: string) =>
   axios.get(`${baseUrl}/device/imei/${imei}`);
 
+export const getDeviceByMillid = (millid: string) =>
+  axios.get(`${baseUrl}/device/millid/${millid}`);
+
+
 export const updateDeviceByImei = (imei: string, data: any) =>
-  axios.put(`${baseUrl}/device/imei/${imei}`, data);
+  axios.patch(`${baseUrl}/device/imei/${imei}`, data);
 
 export const deleteDeviceByImei = (imei: string) =>
   axios.delete(`${baseUrl}/device/imei/${imei}`);
@@ -122,7 +126,7 @@ export const getElps = (millId?: string) => {
 
 export const getElpById = (id: string) => axios.get(`${baseUrl}/elp/${id}`);
 
-export const updateElp = (id: string, data: any) => axios.put(`${baseUrl}/elp/${id}`, data);
+export const updateElp = (id: string, data: any) => axios.patch(`${baseUrl}/elp/${id}`, data);
 
 export const deleteElp = (id: string) => axios.delete(`${baseUrl}/elp/${id}`);
 

@@ -47,6 +47,7 @@ export default function LoginPage() {
         return; // Stop login
       }
       if (access_token) {
+          document.cookie = `token=${access_token}; path=/`;
         // ✅ Save to Redux
         dispatch(
           setCurrentUser({

@@ -31,18 +31,18 @@ export function SidebarNav({ items, title, userRole }: SidebarNavProps) {
     setExpandedItems((prev) => (prev.includes(label) ? prev.filter((item) => item !== label) : [...prev, label]))
   }
 const handleLogout = () => {
-  // ✅ Remove specific items
-    dispatch(logoutUser());
+  // 1️⃣ Remove cookie
+  document.cookie = "token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
 
-  // ✅ OR clear everything (if safe)
-  // localStorage.clear()
+  // 2️⃣ Clear redux state
+  dispatch(logoutUser());
 
-  // Optional: clear sessionStorage too
-  sessionStorage.clear()
+  // 3️⃣ Clear session storage (optional)
+  sessionStorage.clear();
 
-  // Redirect to login
-  router.push("/")
-}
+  // 4️⃣ Redirect to login
+  router.replace("/");
+};
 
 
   return (
