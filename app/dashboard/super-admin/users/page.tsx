@@ -17,15 +17,19 @@ import {
 } from "@/components/ui/dialog"
 import { UserFormModal } from "@/components/user-form-modal"
 import { getUsers, addUser, updateUser, deleteUser } from "@/app/api/fapi"
+import { SuperAdminLayout } from "../SuperAdminLayout"
+import { useSelector } from "react-redux"
+import { RootState } from "@/redux/store"
 
-const superAdminNav = [
-  { label: "All Mills", href: "/dashboard/super-admin/mills", icon: "🏭" },
-  { label: "All Users", href: "/dashboard/super-admin/users", icon: "👥" },
-]
+// const superAdminNav = [
+//   { label: "All Mills", href: "/dashboard/super-admin/mills", icon: "🏭" },
+//   { label: "All Users", href: "/dashboard/super-admin/users", icon: "👥" },
+// ]
 
 export interface SuperAdmin {
   _id: string;
   name: string;
+  millid: string;
   email: string;
   phone: string;
   cnic: string;
@@ -33,7 +37,7 @@ export interface SuperAdmin {
   image: string;
   status: "Active" | "Inactive";
   password: string;
-  role: "SuperAdmin" | "Admin";
+  role: "SuperAdmin" | "Admin" | "User";
   createdAt: string;
 }
 
@@ -47,8 +51,14 @@ export default function UsersPage() {
   const [submitting, setSubmitting] = useState(false)
   const [updatingStatusId, setUpdatingStatusId] = useState<string | null>(null)
   const { toast } = useToast()
+  const user = useSelector((state: RootState) => state.users.currentUser);
+ const [userName, setUserName] = useState("");
+
 
   useEffect(() => {
+    if(user?._id){
+      setUserName(user?.name || "User");
+    }
     fetchSuperAdmins()
   }, [])
 
@@ -197,8 +207,9 @@ export default function UsersPage() {
   }
 
   return (
+    <SuperAdminLayout title="Administrator" username={userName}  >
     <div className="flex bg-background min-h-screen">
-      <SidebarNav title="Superadmin Dashboard" items={superAdminNav} userRole="super-admin" />
+     
 
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Top Bar */}
@@ -432,5 +443,6 @@ export default function UsersPage() {
         </div>
       </div>
     </div>
+    </SuperAdminLayout>
   )
 }

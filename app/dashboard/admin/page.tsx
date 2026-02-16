@@ -5,18 +5,34 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { AdminLayout } from "./AdminLayout"
+import { useSelector } from "react-redux"
+import { useEffect, useState } from "react"
+import { RootState } from "@/redux/store"
 
 
 
 export default function AdminDashboard() {
-  return (
-    
-      <AdminLayout>
-    <div className="flex bg-background min-h-screen">
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Top Bar */}
-        <div className="bg-card border-b border-border/50 px-8 py-4 flex justify-between items-center">
-          <div>
+    const user = useSelector((state: RootState) => state.users.currentUser);
+    const [userName, setUserName] = useState("");
+ const [millName, setMillName] = useState("");
+
+    useEffect(() => {
+        if (user?._id) {
+        const userName = user.name || "User";
+        const millName = user.millid?.millname || "Mill";
+
+        setUserName(userName);
+        setMillName(millName);
+        }
+    }, [user]);
+
+    return (
+        <AdminLayout username={userName} millName={millName} >
+            <div className="flex bg-background min-h-screen">
+                <div className="flex-1 flex flex-col overflow-hidden">
+                    {/* Top Bar */}
+                    <div className="bg-card border-b border-border/50 px-8 py-4 flex justify-between items-center">
+                        <div>
             <h1 className="text-2xl font-bold text-foreground">Administrator Dashboard</h1>
             <p className="text-sm text-muted-foreground">Manage users, records, and approvals</p>
           </div>

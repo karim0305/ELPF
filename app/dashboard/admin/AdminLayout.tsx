@@ -45,7 +45,7 @@ export function AdminLayout({ children, username, millName }: AdminLayoutProps) 
       </div>
     </div>
   )}
-
+ 
   {/* Main Content */}
   <div className="flex-1 overflow-auto p-8">{children}</div>
 </div>

@@ -6,20 +6,25 @@ import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useSelector } from "react-redux";
 import type { RootState } from "@/redux/store";
+import { SuperAdminLayout } from "./SuperAdminLayout"
+import { useEffect, useState } from "react"
 
-const superAdminNav = [
-  { label: "All Mills", href: "/dashboard/super-admin/mills", icon: "🏭" },
-  { label: "All Users", href: "/dashboard/super-admin/users", icon: "👥" },
-]
+
 
 export default function SuperAdminDashboard() {
   const user = useSelector((state: RootState) => state.users.currentUser);
-  console.log(user);
+  const [userName, setUserName] = useState("");
+  useEffect(() => {
+    if(user?._id){
+      setUserName(user?.name || "User");
+    }
+  }, [user])
+ 
   return (
+   <SuperAdminLayout title="Administrator" username={userName}  >
     <div className="flex bg-background min-h-screen">
       {/* Sidebar Navigation */}
-      <SidebarNav title="Superadmin Dashboard" items={superAdminNav} userRole="super-admin" />
-
+     
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Top Bar */}
        <div className="bg-card border-b border-border/50 px-8 py-4 flex justify-between items-center">
@@ -243,5 +248,6 @@ export default function SuperAdminDashboard() {
         </div>
       </div>
     </div>
+    </SuperAdminLayout>
   )
 }

@@ -16,11 +16,11 @@ import {
 import { MillFormModal } from "@/components/mill-form-modal"
 import { getMillInfos, deleteMillInfo, updateMillInfo } from "@/app/api/fapi"
 import { useToast } from "@/hooks/use-toast"
+import { SuperAdminLayout } from "../SuperAdminLayout"
+import { useSelector } from "react-redux"
+import { RootState } from "@/redux/store"
 
-const superAdminNav = [
-  { label: "All Mills", href: "/dashboard/super-admin/mills", icon: "🏭" },
-  { label: "All Users", href: "/dashboard/super-admin/users", icon: "👥" },
-]
+
 
 export interface Mill {
   _id: string
@@ -47,8 +47,13 @@ export default function MillsPage() {
   const [loading, setLoading] = useState(false)
   const { toast } = useToast()
   const [updatingStatusId, setUpdatingStatusId] = useState<string | null>(null)
+  const user = useSelector((state: RootState) => state.users.currentUser);
+  const [userName, setUserName] = useState("");
 
   useEffect(() => {
+    if(user?._id){
+      setUserName(user?.name || "User");
+    }
     fetchMills()
   }, [])
 
@@ -107,8 +112,9 @@ export default function MillsPage() {
   }
 
   return (
+      <SuperAdminLayout title="Administrator" username={userName}  >
     <div className="flex bg-background min-h-screen">
-      <SidebarNav title="All Mills" items={superAdminNav} userRole="super-admin" />
+    
 
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Top Bar */}
@@ -346,5 +352,6 @@ export default function MillsPage() {
         </div>
       </div>
     </div>
+    </SuperAdminLayout>
   )
 }

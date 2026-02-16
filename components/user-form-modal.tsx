@@ -1,27 +1,34 @@
 "use client"
-import { useState } from "react"
+import { use, useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useForm } from "react-hook-form"
 import { useToast } from "@/hooks/use-toast"
+import { getMillInfos } from "@/app/api/fapi"
+import { Mill } from "@/redux/slices/userSlice"
+import { User } from "lucide-react"
+import { useSelector } from "react-redux"
+import { RootState } from "@/redux/store"
 
 export interface MillFormData {
   name: string;
   email: string;
+  millid: string;
   phone: string;
   cnic: string;
   address: string;
   image?: string;
   status: "Active" | "Inactive";
   password?: string;
-  role: "SuperAdmin" | "Admin";
+  role: "SuperAdmin" | "Admin" | "User";
 }
 
 interface SuperAdmin {
   _id: string;
   name: string;
+  millid: string;
   email: string;
   phone: string;
   cnic: string;
@@ -29,24 +36,26 @@ interface SuperAdmin {
   image: string;
   status: "Active" | "Inactive";
   password: string;
-  role: "SuperAdmin" | "Admin";
+  role: "SuperAdmin" | "Admin" | "User";
   createdAt: string;
 }
 
 interface CreateUserData {
   name: string;
+  millid: string;
   email: string;
   phone: string;
   cnic: string;
   address: string;
   image: string;
-  role: "SuperAdmin" | "Admin";
+  role: "SuperAdmin" | "Admin" | "User";
   status: "Active" | "Inactive";
   password: string;
 }
 
 interface UpdateUserData {
   name: string;
+  millid: string;
   email: string;
   phone: string;
   cnic: string;
@@ -68,33 +77,60 @@ export function UserFormModal({ initialData, onSubmit, onClose, isLoading = fals
   const { toast } = useToast()
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [preview, setPreview] = useState<string>(initialData?.image || "")
+  const user = useSelector((state: RootState) => state.users.currentUser)
+  const [userid, setUserid] = useState<string>("")
+
+
+  const [mills, setMills] = useState<Mill[]>([])
+  
+  useEffect(() => {
+    if(user?._id){
+      setUserid(user._id)
+    }
+    const fetchMills = async () => {
+      try {
+        const response = await getMillInfos()
+
+        console.log("response.data =>", response?.data)
+
+
+        setMills(response?.data || [])
+      } catch (err: any) {
+        console.error("ERROR =>", err)
+      }
+    }
+
+    fetchMills()
+  }, [])
 
   const form = useForm<MillFormData>({
+    
     defaultValues: initialData
       ? {
-          name: initialData.name || "",
-          email: initialData.email || "",
-          phone: initialData.phone || "",
-          cnic: initialData.cnic || "",
-          address: initialData.address || "",
-          image: initialData.image || "",
-          role: initialData.role || "Admin",
-          password: "",
-          status: initialData.status || "Active",
-        }
+        name: initialData.name || "",
+        email: initialData.email || "",
+        millid: initialData.millid || "",
+        phone: initialData.phone || "",
+        cnic: initialData.cnic || "",
+        address: initialData.address || "",
+        image: initialData.image || "",
+        role: initialData.role || "SuperAdmin" || "Admin" || "User",
+        password: "",
+        status: initialData.status || "Active",
+      }
       : {
-          name: "",
-          email: "",
-          phone: "",
-          cnic: "",
-          address: "",
-          image: "",
-          role: "Admin",
-          password: "",
-          status: "Active",
-        },
+        name: "",
+        email: "",
+        phone: "",
+        cnic: "",
+        address: "",
+        image: "",
+        role: "Admin",
+        password: "",
+        status: "Active",
+      },
   })
-
+const selectedRole = form.watch("role")
   // Cloudinary config - hardcoded
   const CLOUDINARY_UPLOAD_PRESET = 'tailorImages'
   const CLOUDINARY_CLOUD_NAME = 'dzfqgziwl'
@@ -138,6 +174,7 @@ export function UserFormModal({ initialData, onSubmit, onClose, isLoading = fals
         // For update: password is optional
         const submitData: UpdateUserData = {
           name: payload.name,
+          millid: payload.millid,
           email: payload.email,
           phone: payload.phone,
           cnic: payload.cnic,
@@ -154,12 +191,13 @@ export function UserFormModal({ initialData, onSubmit, onClose, isLoading = fals
         // For create: password is required
         const submitData: CreateUserData = {
           name: payload.name,
+          millid: payload.millid,
           email: payload.email,
           phone: payload.phone,
           cnic: payload.cnic,
           address: payload.address,
           image: payload.image || "",
-          role: payload.role,
+          role: payload.role || "SuperAdmin" || "Admin" || "User",
           status: payload.status,
           password: payload.password || "",
         }
@@ -313,6 +351,45 @@ export function UserFormModal({ initialData, onSubmit, onClose, isLoading = fals
           )}
         />
 
+    {(selectedRole === "Admin" || selectedRole === "User") && (
+  <FormField
+    control={form.control}
+    name="millid"
+    render={({ field }) => (
+      <FormItem>
+        <FormLabel>Mill *</FormLabel>
+        <Select
+          onValueChange={field.onChange}
+          defaultValue={field.value}
+          disabled={isLoading}
+        >
+          <FormControl>
+            <SelectTrigger>
+              <SelectValue placeholder="Select a mill" />
+            </SelectTrigger>
+          </FormControl>
+
+          <SelectContent>
+            {mills.length > 0 ? (
+              mills.map((mill) => (
+                <SelectItem key={mill._id} value={mill._id}>
+                  {mill.millname}
+                </SelectItem>
+              ))
+            ) : (
+              <SelectItem value="loading" disabled>
+                No mills available
+              </SelectItem>
+            )}
+          </SelectContent>
+        </Select>
+        <FormMessage />
+      </FormItem>
+    )}
+  />
+)}
+
+
         {/* Password Field */}
         <FormField
           control={form.control}
@@ -361,17 +438,17 @@ export function UserFormModal({ initialData, onSubmit, onClose, isLoading = fals
 
         {/* Form Actions */}
         <div className="flex gap-2 pt-4">
-          <Button 
-            type="submit" 
-            className="bg-primary hover:bg-primary/90 text-primary-foreground flex-1" 
+          <Button
+            type="submit"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground flex-1"
             disabled={isLoading}
           >
             {isLoading ? "Processing..." : initialData ? "Update User" : "Create User"}
           </Button>
-          <Button 
-            type="button" 
-            variant="outline" 
-            className="border-border/50 bg-transparent flex-1" 
+          <Button
+            type="button"
+            variant="outline"
+            className="border-border/50 bg-transparent flex-1"
             onClick={onClose}
             disabled={isLoading}
           >

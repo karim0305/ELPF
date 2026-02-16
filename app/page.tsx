@@ -22,7 +22,7 @@ export default function LoginPage() {
   const dispatch = useDispatch();
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!email || !password) {
       toast({
         title: "Missing Fields",
@@ -38,34 +38,42 @@ export default function LoginPage() {
       dispatch(setLoading(true));
       const response = await login({ email, password });
       const { access_token, user } = response.data;
-         if (access_token) {
-            // ✅ Save to Redux
-      dispatch(
-        setCurrentUser({
-          user: {
-            _id: user._id,
-            millid: user.millid ?? null, 
-            name: user.name,
-            email: user.email,
-            phone: user.phone,
-            cnic: user.cnic,
-            address: user.address,
-            role: user.role,
-            image: user.image,
-            lastLogin: user.lastLogin,
-            status: user.status,
-            otp: user.otp,
-            otpExpiresAt: user.otpExpiresAt,
-            createdAt: user.createdAt,
-            updatedAt: user.updatedAt,
-          },
-          token: access_token,
-        })
-      );
+      if (user.status !== "Active") {
+        toast({
+          title: "Account Inactive",
+          description: `Your account is currently ${user.status}. Please contact administrator.`,
+          variant: "destructive",
+        });
+        return; // Stop login
+      }
+      if (access_token) {
+        // ✅ Save to Redux
+        dispatch(
+          setCurrentUser({
+            user: {
+              _id: user._id,
+              millid: user.millid ?? null,
+              name: user.name,
+              email: user.email,
+              phone: user.phone,
+              cnic: user.cnic,
+              address: user.address,
+              role: user.role,
+              image: user.image,
+              lastLogin: user.lastLogin,
+              status: user.status,
+              otp: user.otp,
+              otpExpiresAt: user.otpExpiresAt,
+              createdAt: user.createdAt,
+              updatedAt: user.updatedAt,
+            },
+            token: access_token,
+          })
+        );
 
-         }
-console.log("User Name:", user.name);
-console.log("Mill Name:", user.millid?.millname);
+      }
+      console.log("User Name:", user.name);
+      console.log("Mill Name:", user.millid?.millname);
       toast({
         title: "Login Successful",
         description: `Welcome, ${user.name || user.email}!`,
