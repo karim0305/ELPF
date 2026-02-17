@@ -17,11 +17,16 @@ import { SidebarNav } from "@/components/sidebar-nav"
 import { AdminLayout } from "../../AdminLayout"
 import { useSelector } from "react-redux"
 import { RootState } from "@/redux/store"
+import { Mill, setError, setLoading } from "@/redux/slices/userSlice"
+import { addHaulage, getHaulages, updateHaulage } from "@/app/api/fapi"
+import { toast } from "@/components/ui/use-toast"
 
 interface Haulage {
-  id: string
+  _id: string
+  millid: string
   haulageCode: string
-  haulaugeName: string
+  haulageName: string
+  remarks: string
   status: string
   createdDate: string
 }
@@ -31,85 +36,103 @@ interface Haulage {
 export default function ManageHaulagePages() {
   const user = useSelector((state: RootState) => state.users.currentUser);
  const [userName, setUserName] = useState("");
+const [getmillid, setMillid] = useState<string>("");
  const [millName, setMillName] = useState("");
+   const [haulages, setHaulages] = useState<Haulage[]>([])
 
     useEffect(() => {
       if (user) {
         const userName = user.name || "User";
         const millName = user.millid?.millname || "Mill";
+        const millId = user.millid?._id || "Mill";
         setUserName(userName);
         setMillName(millName);
+        setMillid(millId);
+        fetchHoulages();
         console.log("Current User in AdminLayout:", user);
         console.log("User Name:", userName);
-        console.log("Mill Name:", millName);
+        console.log("Mill Name:", millId);
       }
      
      
     }, [user]);
 
-  const [haulages, setHaulages] = useState<Haulage[]>([
-    {
-      id: "HAU-001",
-      haulageCode: "HAU-A-001",
-      haulaugeName: "Alpha Transport Services",
-      status: "active",
-      createdDate: "2024-01-15",
-    },
-    {
-      id: "HAU-002",
-      haulageCode: "HAU-B-001",
-      haulaugeName: "Beta Logistics",
-      status: "active",
-      createdDate: "2024-01-20",
-    },
-  ])
+
+      const fetchHoulages = async () => {
+        try {
+          setLoading(true)
+          setError(null)
+          const response = await getHaulages()
+          setHaulages(response.data.data || response.data || [])
+        } catch (err: any) {
+          const errorMessage = err.response?.data?.message || "Failed to fetch haulages"
+          setError(errorMessage)
+          toast({ title: 'Error', description: errorMessage, variant: 'destructive' })
+          console.error(err)
+        } finally {
+          setLoading(false)
+        }
+      }
+
+
 
   const [isOpen, setIsOpen] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [formData, setFormData] = useState({
+    millid: "",
     haulageCode: "",
-    haulaugeName: "",
+    haulageName: "",
+    remarks: "",
   })
 
-  const handleSave = () => {
+const handleSave = async () => {
+  try {
+    const payload = {
+      millid: getmillid,
+      haulageCode: formData.haulageCode,
+      haulageName: formData.haulageName,
+      remarks: formData.remarks,
+    };
+console.log("Payload being sent:", payload);
     if (editingId) {
-      setHaulages(
-        haulages.map((h) =>
-          h.id === editingId
-            ? {
-                ...h,
-                haulageCode: formData.haulageCode,
-                haulaugeName: formData.haulaugeName,
-              }
-            : h,
-        ),
-      )
+      // UPDATE
+      const response = await updateHaulage(editingId, payload);
+      const updatedHaulage = response.data;
+
+      setHaulages((prev) =>
+        prev.map((h) => (h._id === editingId ? updatedHaulage : h))
+      );
     } else {
-      const newId = `HAU-${String(haulages.length + 1).padStart(3, "0")}`
-      setHaulages([
-        ...haulages,
-        {
-          id: newId,
-          haulageCode: formData.haulageCode,
-          haulaugeName: formData.haulaugeName,
-          status: "active",
-          createdDate: new Date().toISOString().split("T")[0],
-        },
-      ])
+      // CREATE
+      const response = await addHaulage(payload);
+      const newHaulage = response.data;
+
+      setHaulages((prev) => [...prev, newHaulage]);
     }
-    setIsOpen(false)
-    setFormData({ haulageCode: "", haulaugeName: "" })
-    setEditingId(null)
+
+    // Reset form
+    setIsOpen(false);
+    setFormData({
+      millid: "",
+      haulageCode: "",
+      haulageName: "",
+      remarks: "",
+    });
+    setEditingId(null);
+  } catch (error) {
+    console.error("Error saving haulage:", error);
   }
+};
+
 
   const handleEdit = (haulage: Haulage) => {
-    setFormData({ haulageCode: haulage.haulageCode, haulaugeName: haulage.haulaugeName })
-    setEditingId(haulage.id)
+    setFormData({remarks: haulage.remarks, millid: haulage.millid, haulageCode: haulage.haulageCode, haulageName: haulage.haulageName })
+    setEditingId(haulage._id)
     setIsOpen(true)
   }
 
   const handleDelete = (id: string) => {
-    setHaulages(haulages.filter((h) => h.id !== id))
+    setHaulages(haulages.filter((h) => h._id !== id))
   }
 
   return (
@@ -168,7 +191,7 @@ export default function ManageHaulagePages() {
                   className="bg-primary hover:bg-primary/90"
                   onClick={() => {
                     setEditingId(null)
-                    setFormData({ haulageCode: "", haulaugeName: "" })
+                    setFormData({millid:"", haulageCode: "", haulageName: "", remarks: ""})
                   }}
                 >
                   + Add New Haulage
@@ -195,10 +218,19 @@ export default function ManageHaulagePages() {
                     <Input
                       type="text"
                       placeholder="Haulage Name"
-                      value={formData.haulaugeName}
-                      onChange={(e) => setFormData({ ...formData, haulaugeName: e.target.value })}
+                      value={formData.haulageName}
+                      onChange={(e) => setFormData({ ...formData, haulageName: e.target.value })}
                       className="mt-1 bg-muted border-border/50"
                     />
+                    <label className="text-sm font-medium text-foreground">Remarks</label>
+                    <Input
+                      type="text"
+                      placeholder="Remarks"
+                      value={formData.remarks}
+                      onChange={(e) => setFormData({ ...formData, remarks: e.target.value })}
+                      className="mt-1 bg-muted border-border/50">
+
+                      </Input>
                   </div>
                   <div className="flex gap-2 pt-4">
                     <Button onClick={handleSave} className="flex-1 bg-primary hover:bg-primary/90">
@@ -235,9 +267,9 @@ export default function ManageHaulagePages() {
                   </TableHeader>
                   <TableBody>
                     {haulages.map((haulage) => (
-                      <TableRow key={haulage.id} className="hover:bg-muted/20">
+                      <TableRow key={haulage._id} className="hover:bg-muted/20">
                         <TableCell className="text-foreground">{haulage.haulageCode}</TableCell>
-                        <TableCell className="text-foreground">{haulage.haulaugeName}</TableCell>
+                        <TableCell className="text-foreground">{haulage.haulageName}</TableCell>
                         <TableCell className="text-right">
                           <div className="flex gap-2 justify-end">
                             <Button
@@ -252,7 +284,7 @@ export default function ManageHaulagePages() {
                               size="sm"
                               variant="outline"
                               className="text-xs bg-transparent border-border/50 text-destructive hover:text-destructive"
-                              onClick={() => handleDelete(haulage.id)}
+                              onClick={() => handleDelete(haulage._id)}
                             >
                               Delete
                             </Button>
