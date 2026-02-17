@@ -105,7 +105,7 @@ export const getMillInfoById = (id: string) =>
   axios.get(`${baseUrl}/millinfo/${id}`);
 
 export const updateMillInfo = (id: string, data: any) =>
-  axios.put(`${baseUrl}/millinfo/${id}`, data);
+  axios.patch(`${baseUrl}/millinfo/${id}`, data);
 
 export const deleteMillInfo = (id: string) =>
   axios.delete(`${baseUrl}/millinfo/${id}`);
@@ -199,7 +199,7 @@ export const getHaulageById = (id: string) =>
 
 // Update haulage by ID
 export const updateHaulage = (id: string, data: any) =>
-  axios.put(`${baseUrl}/haulage/${id}`, data);
+  axios.patch(`${baseUrl}/haulage/${id}`, data);
 
 // Delete haulage by ID
 export const deleteHaulage = (id: string) =>

@@ -19,18 +19,17 @@ import { LocationPicker } from "@/components/location-picker"
 import { AdminLayout } from "../../AdminLayout"
 import { RootState } from "@/redux/store"
 import { useSelector } from "react-redux"
+import { setError, setLoading } from "@/redux/slices/userSlice"
+import { addElp, deleteElp, getElps, updateElp } from "@/app/api/fapi"
+import { toast } from "@/components/ui/use-toast"
 
 interface LoadingPoint {
-  id: string
-  companyCode: string
-  companyName: string
-  lpCode: string
-  lpName: string
-  gpsLatitude: string
-  gpsLongitude: string
-  radius: string
+  _id: string
+  millid: string
+  elpCode: string
+  elpName: string
+  remarks: string
   status: string
-  createdDate: string
 }
 
 
@@ -39,131 +38,172 @@ export default function ManageLPPage() {
 const user = useSelector((state: RootState) => state.users.currentUser);
  const [userName, setUserName] = useState("");
  const [millName, setMillName] = useState("");
+ const [millid, setMillid] = useState("");
+ const [lps, setLps] = useState<LoadingPoint[]>([])
+ const [updatingStatusId, setUpdatingStatusId] = useState<string | null>(null);
+
 
     useEffect(() => {
       if (user) {
         const userName = user.name || "User";
         const millName = user.millid?.millname || "Mill";
+        const millId = user.millid?._id || "Mill";
         setUserName(userName);
         setMillName(millName);
+        setMillid(millId);
+        GetElpByMill(millId);
         console.log("Current User in AdminLayout:", user);
         console.log("User Name:", userName);
         console.log("Mill Name:", millName);
       }
-     
-     
     }, [user]);
 
 
-  const [lps, setLps] = useState<LoadingPoint[]>([
-    {
-      id: "LP-001",
-      companyCode: "COMP-001",
-      companyName: "Alpha Sugar Mills",
-      lpCode: "LP-A-001",
-      lpName: "North Loading Point",
-      gpsLatitude: "28.7041",
-      gpsLongitude: "77.1025",
-      radius: "500",
-      status: "active",
-      createdDate: "2024-01-15",
-    },
-    {
-      id: "LP-002",
-      companyCode: "COMP-002",
-      companyName: "Beta Transport",
-      lpCode: "LP-B-001",
-      lpName: "South Loading Point",
-      gpsLatitude: "28.6139",
-      gpsLongitude: "77.2090",
-      radius: "450",
-      status: "active",
-      createdDate: "2024-01-20",
-    },
-  ])
+  const GetElpByMill = async (millid: string) => {
+  try {
+    const response = await getElps(millid);
+    console.log("Elps fetched by millid:", response.data);
+    setLps(response.data);
+  } catch (error) {
+    console.error("Error fetching elps by millid:", error);
+  }
+};
+
+
+  
 
   const [isOpen, setIsOpen] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [formData, setFormData] = useState({
-    companyCode: "",
-    companyName: "",
-    lpCode: "",
-    lpName: "",
-    gpsLatitude: "28.7041",
-    gpsLongitude: "77.1025",
-    radius: "",
-    status: "active",
+    millid: "",
+  elpCode: "",
+  elpName: "",
+  remarks: "",
+  status: "active",
   })
 
-  const handleSave = () => {
+
+const handleSave = async () => {
+  try {
     if (editingId) {
-      setLps(
-        lps.map((lp) =>
-          lp.id === editingId
-            ? {
-                ...lp,
-                companyCode: formData.companyCode,
-                companyName: formData.companyName,
-                lpCode: formData.lpCode,
-                lpName: formData.lpName,
-                gpsLatitude: formData.gpsLatitude,
-                gpsLongitude: formData.gpsLongitude,
-                radius: formData.radius,
-                status: formData.status,
-              }
-            : lp,
-        ),
-      )
+      // UPDATE
+      const response = await updateElp(editingId, { ...formData, millid });
+      const updatedLp = response.data;
+
+      setLps((prev) =>
+        prev.map((lp) => (lp._id === editingId ? updatedLp : lp))
+      );
+
+      toast({
+        title: "Success",
+        description: "Loading Point updated successfully",
+        variant: "default",
+      });
     } else {
-      const newId = `LP-${String(lps.length + 1).padStart(3, "0")}`
-      setLps([
-        ...lps,
-        {
-          id: newId,
-          companyCode: formData.companyCode,
-          companyName: formData.companyName,
-          lpCode: formData.lpCode,
-          lpName: formData.lpName,
-          gpsLatitude: formData.gpsLatitude,
-          gpsLongitude: formData.gpsLongitude,
-          radius: formData.radius,
-          status: formData.status,
-          createdDate: new Date().toISOString().split("T")[0],
-        },
-      ])
+      // CREATE
+      const response = await addElp({ ...formData, millid });
+      const newLp = response.data;
+
+      setLps((prev) => [...prev, newLp]);
+
+      toast({
+        title: "Success",
+        description: "Loading Point added successfully",
+        variant: "default",
+      });
     }
-    setIsOpen(false)
+
+    // Reset form
     setFormData({
-      companyCode: "",
-      companyName: "",
-      lpCode: "",
-      lpName: "",
-      gpsLatitude: "28.7041",
-      gpsLongitude: "77.1025",
-      radius: "",
+      millid: "",
+      elpCode: "",
+      elpName: "",
+      remarks: "",
       status: "active",
-    })
-    setEditingId(null)
-  }
+    });
+    setEditingId(null);
+    setIsOpen(false);
+  } catch (error: any) {
+    console.error("Error saving LP:", error);
 
-  const handleEdit = (lp: LoadingPoint) => {
-    setFormData({
-      companyCode: lp.companyCode,
-      companyName: lp.companyName,
-      lpCode: lp.lpCode,
-      lpName: lp.lpName,
-      gpsLatitude: lp.gpsLatitude,
-      gpsLongitude: lp.gpsLongitude,
-      radius: lp.radius,
-      status: lp.status,
-    })
-    setEditingId(lp.id)
-    setIsOpen(true)
+    // show toast for error
+    const message =
+      error.response?.data?.message ||
+      "Failed to save Loading Point. Please try again.";
+    toast({
+      title: "Error",
+      description: message,
+      variant: "destructive",
+    });
   }
+};
 
-  const handleDelete = (id: string) => {
-    setLps(lps.filter((lp) => lp.id !== id))
+const handleEdit = (lp: LoadingPoint) => {
+  setFormData({
+    millid: lp.millid,
+    elpCode: lp.elpCode,
+    elpName: lp.elpName,
+    remarks: lp.remarks,
+    status: lp.status,
+  });
+  setEditingId(lp._id);
+  setIsOpen(true);
+};
+
+const handleDelete = async (_id: string) => {
+  try {
+    await deleteElp(_id);
+    setLps((prev) => prev.filter((lp) => lp._id !== _id));
+
+    toast({
+      title: "Success",
+      description: "Loading Point deleted successfully",
+      variant: "default",
+    });
+  } catch (error: any) {
+    console.error("Error deleting LP:", error);
+    const message =
+      error.response?.data?.message ||
+      "Failed to delete Loading Point. Please try again.";
+    toast({
+      title: "Error",
+      description: message,
+      variant: "destructive",
+    });
   }
+};
+
+
+const handleLpStatusToggle = async (lp: LoadingPoint) => {
+  try {
+    setUpdatingStatusId(lp._id);
+
+    const newStatus = lp.status === "active" ? "inactive" : "active";
+
+    const response = await updateElp(lp._id, { status: newStatus });
+    const updatedLp = response.data;
+
+    setLps((prev) =>
+      prev.map((l) => (l._id === lp._id ? updatedLp : l))
+    );
+
+    toast({
+      title: "Updated",
+      description: `Loading Point status set to ${newStatus}.`,
+      variant: "default",
+    });
+  } catch (err: any) {
+    toast({
+      title: "Error",
+      description: err.response?.data?.message || "Failed to update status",
+      variant: "destructive",
+    });
+  } finally {
+    setUpdatingStatusId(null);
+  }
+};
+
+
 
   return (
      <AdminLayout username={userName} millName={millName} >
@@ -221,13 +261,10 @@ const user = useSelector((state: RootState) => state.users.currentUser);
                     onClick={() => {
                       setEditingId(null)
                       setFormData({
-                        companyCode: "",
-                        companyName: "",
-                        lpCode: "",
-                        lpName: "",
-                        gpsLatitude: "28.7041",
-                        gpsLongitude: "77.1025",
-                        radius: "",
+                        millid: "",
+                        elpCode: "",
+                        elpName: "",
+                        remarks: "",
                         status: "active",
                       })
                     }}
@@ -241,70 +278,39 @@ const user = useSelector((state: RootState) => state.users.currentUser);
                     <DialogDescription>Fill in the loading point details below</DialogDescription>
                   </DialogHeader>
                   <div className="space-y-4 max-h-96 overflow-y-auto">
+                   
                     <div>
-                      <label className="text-sm font-medium text-foreground">Company Code</label>
-                      <Input
-                        type="text"
-                        placeholder="Company Code"
-                        value={formData.companyCode}
-                        onChange={(e) => setFormData({ ...formData, companyCode: e.target.value })}
-                        className="mt-1 bg-muted border-border/50"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium text-foreground">Company Name</label>
+                      <label className="text-sm font-medium text-foreground">ELP Name</label>
                       <Input
                         type="text"
                         placeholder="Company Name"
-                        value={formData.companyName}
-                        onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
+                        value={formData.elpName}
+                        onChange={(e) => setFormData({ ...formData, elpName: e.target.value })}
                         className="mt-1 bg-muted border-border/50"
                       />
                     </div>
                     <div>
-                      <label className="text-sm font-medium text-foreground">LP Code</label>
+                      <label className="text-sm font-medium text-foreground">ELP Code</label>
                       <Input
                         type="text"
                         placeholder="LP Code"
-                        value={formData.lpCode}
-                        onChange={(e) => setFormData({ ...formData, lpCode: e.target.value })}
+                        value={formData.elpCode}
+                        onChange={(e) => setFormData({ ...formData, elpCode: e.target.value })}
                         className="mt-1 bg-muted border-border/50"
                       />
                     </div>
                     <div>
-                      <label className="text-sm font-medium text-foreground">LP Name</label>
+                      <label className="text-sm font-medium text-foreground">Remarks</label>
                       <Input
                         type="text"
-                        placeholder="LP Name"
-                        value={formData.lpName}
-                        onChange={(e) => setFormData({ ...formData, lpName: e.target.value })}
+                        placeholder="Remarks"
+                        value={formData.remarks}
+                        onChange={(e) => setFormData({ ...formData, remarks: e.target.value })}
                         className="mt-1 bg-muted border-border/50"
                       />
                     </div>
-                    <div>
-                      <label className="text-sm font-medium text-foreground mb-2 block">GPS Location</label>
-                      <LocationPicker
-                        onLocationSelected={(lat, lng) => {
-                          setFormData({
-                            ...formData,
-                            gpsLatitude: lat,
-                            gpsLongitude: lng,
-                          })
-                        }}
-                        initialLatitude={formData.gpsLatitude}
-                        initialLongitude={formData.gpsLongitude}
-                      />
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium text-foreground">Radius (meters)</label>
-                      <Input
-                        type="text"
-                        placeholder="Radius in meters"
-                        value={formData.radius}
-                        onChange={(e) => setFormData({ ...formData, radius: e.target.value })}
-                        className="mt-1 bg-muted border-border/50"
-                      />
-                    </div>
+                   
+                    
                     <div>
                       <label className="text-sm font-medium text-foreground">Status</label>
                       <Select
@@ -348,26 +354,40 @@ const user = useSelector((state: RootState) => state.users.currentUser);
                   <Table>
                     <TableHeader className="bg-muted/30">
                       <TableRow className="hover:bg-transparent">
-                        <TableHead className="font-semibold">Company Code</TableHead>
-                        <TableHead className="font-semibold">Company Name</TableHead>
-                        <TableHead className="font-semibold">LP Code</TableHead>
-                        <TableHead className="font-semibold">LP Name</TableHead>
-                        <TableHead className="font-semibold">GPS Coordinates</TableHead>
-                        <TableHead className="font-semibold">Radius (m)</TableHead>
+                        <TableHead className="font-semibold">ElP Name</TableHead>
+                        <TableHead className="font-semibold">ELP Code</TableHead>
+                        <TableHead className="font-semibold">Remarks</TableHead>
+                        <TableHead className="font-semibold">Status</TableHead>
                         <TableHead className="font-semibold text-right">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {lps.map((lp) => (
-                        <TableRow key={lp.id} className="hover:bg-muted/20">
-                          <TableCell className="text-foreground">{lp.companyCode}</TableCell>
-                          <TableCell className="text-foreground">{lp.companyName}</TableCell>
-                          <TableCell className="text-foreground">{lp.lpCode}</TableCell>
-                          <TableCell className="text-foreground">{lp.lpName}</TableCell>
-                          <TableCell className="text-foreground text-xs">
-                            {lp.gpsLatitude}, {lp.gpsLongitude}
-                          </TableCell>
-                          <TableCell className="text-foreground">{lp.radius}</TableCell>
+                        <TableRow key={lp._id} className="hover:bg-muted/20">
+                        
+                          <TableCell className="text-foreground">{lp.elpName}</TableCell>
+                          <TableCell className="text-foreground">{lp.elpCode}</TableCell>
+                          <TableCell className="text-foreground">{lp.remarks}</TableCell>
+                          <TableCell>
+  <div className="flex items-center gap-2">
+    <span className="capitalize">{lp.status}</span>
+    <Button
+      size="sm"
+      variant="outline"
+      onClick={() => handleLpStatusToggle(lp)}
+      disabled={updatingStatusId === lp._id}
+    >
+      {updatingStatusId === lp._id
+        ? "..."
+        : lp.status === "active"
+        ? "Deactivate"
+        : "Activate"}
+    </Button>
+  </div>
+</TableCell>
+
+
+
                           <TableCell className="text-right">
                             <div className="flex gap-2 justify-end">
                               <Button
@@ -382,7 +402,7 @@ const user = useSelector((state: RootState) => state.users.currentUser);
                                 size="sm"
                                 variant="outline"
                                 className="text-xs bg-transparent border-border/50 text-destructive hover:text-destructive"
-                                onClick={() => handleDelete(lp.id)}
+                                onClick={() => handleDelete(lp._id)}
                               >
                                 Delete
                               </Button>

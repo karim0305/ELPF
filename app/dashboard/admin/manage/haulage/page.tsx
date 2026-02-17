@@ -18,8 +18,9 @@ import { AdminLayout } from "../../AdminLayout"
 import { useSelector } from "react-redux"
 import { RootState } from "@/redux/store"
 import { Mill, setError, setLoading } from "@/redux/slices/userSlice"
-import { addHaulage, getHaulages, updateHaulage } from "@/app/api/fapi"
-import { toast } from "@/components/ui/use-toast"
+import { addHaulage, deleteHaulage, getHaulages, updateHaulage } from "@/app/api/fapi"
+import { useToast } from "@/hooks/use-toast"
+
 
 interface Haulage {
   _id: string
@@ -39,6 +40,7 @@ export default function ManageHaulagePages() {
 const [getmillid, setMillid] = useState<string>("");
  const [millName, setMillName] = useState("");
    const [haulages, setHaulages] = useState<Haulage[]>([])
+      const { toast } = useToast()
 
     useEffect(() => {
       if (user) {
@@ -93,7 +95,7 @@ const handleSave = async () => {
       haulageName: formData.haulageName,
       remarks: formData.remarks,
     };
-console.log("Payload being sent:", payload);
+
     if (editingId) {
       // UPDATE
       const response = await updateHaulage(editingId, payload);
@@ -102,12 +104,24 @@ console.log("Payload being sent:", payload);
       setHaulages((prev) =>
         prev.map((h) => (h._id === editingId ? updatedHaulage : h))
       );
+
+      toast({
+        title: 'Updated',
+        description: 'Haulage updated successfully',
+        variant: 'default',
+      });
     } else {
       // CREATE
       const response = await addHaulage(payload);
       const newHaulage = response.data;
 
       setHaulages((prev) => [...prev, newHaulage]);
+
+      toast({
+        title: 'Created',
+        description: 'Haulage added successfully',
+        variant: 'default',
+      });
     }
 
     // Reset form
@@ -119,21 +133,78 @@ console.log("Payload being sent:", payload);
       remarks: "",
     });
     setEditingId(null);
-  } catch (error) {
+  } catch (error: any) {
+    // Check if error is duplicate key (11000)
+    const isDuplicate =
+      error.response?.data?.code === 11000 ||
+      error.response?.data?.errmsg?.includes("duplicate key");
+
+    if (isDuplicate) {
+      // ❌ Duplicate, do NOT show toast
+      console.error("Duplicate key error, not showing toast:", error.response?.data);
+      return;
+    }
+
+    // For other errors, show destructive toast
+    const errorMessage =
+      error.response?.data?.message ||
+      error.response?.data?.errmsg ||
+      error.message ||
+      "Something went wrong";
+
+    toast({
+      title: 'Error',
+      description: errorMessage,
+      variant: 'destructive',
+    });
+
     console.error("Error saving haulage:", error);
   }
 };
 
 
-  const handleEdit = (haulage: Haulage) => {
-    setFormData({remarks: haulage.remarks, millid: haulage.millid, haulageCode: haulage.haulageCode, haulageName: haulage.haulageName })
-    setEditingId(haulage._id)
-    setIsOpen(true)
-  }
 
-  const handleDelete = (id: string) => {
-    setHaulages(haulages.filter((h) => h._id !== id))
+const handleEdit = (haulage: Haulage) => {
+  setFormData({
+    remarks: haulage.remarks,
+    millid: haulage.millid,
+    haulageCode: haulage.haulageCode,
+    haulageName: haulage.haulageName,
+  });
+  setEditingId(haulage._id);
+  setIsOpen(true);
+};
+
+
+const handleDelete = async (id: string) => {
+  try {
+    await deleteHaulage(id); // call backend API
+
+    setHaulages((prev) => prev.filter((h) => h._id !== id));
+
+    toast({
+      title: 'Deleted',
+      description: 'Haulage deleted successfully',
+      variant: 'default',
+    });
+  } catch (error: any) {
+    console.error("Delete failed:", error);
+
+    const errorMessage =
+      error.response?.data?.message ||
+      error.response?.data?.errmsg ||
+      error.message ||
+      "Failed to delete haulage";
+
+    toast({
+      title: 'Error',
+      description: errorMessage,
+      variant: 'destructive',
+    });
   }
+};
+
+
 
   return (
          <AdminLayout username={userName} millName={millName} >
