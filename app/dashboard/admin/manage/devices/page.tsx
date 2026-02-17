@@ -330,7 +330,7 @@ const handleStatusToggle = async (device: Device) => {
         {/* ELP Name */}
         <div className="flex-1 mt-1 md:mt-0">
           <span className="text-xs px-2 py-1 rounded bg-secondary/50 text-secondary-foreground">
-            {device.elpid.elpName}
+             {device.elpid ? device.elpid.elpName : 'No ELP exist'}
           </span>
         </div>
 
