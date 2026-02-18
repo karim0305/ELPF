@@ -6,17 +6,39 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { LocationMap } from "@/components/location-map"
-import { getRegistrationbyMill, updateRegistration } from "@/app/api/fapi"
+import { getHaulages, getRegistrationbyElp, getRegistrationbyMill, updateRegistration } from "@/app/api/fapi"
 import { useSelector } from "react-redux"
 import { RootState } from "@/redux/store"
 
+interface Haulage {
+  _id: string;
+  millid: string;
 
+  haulageCode: string;
+  haulageName: string;
+
+  remarks: string;
+}
+interface Elp {
+  _id: string;
+  millid: string;
+
+  elpCode: string;
+  elpName: string;
+
+  remarks: string;
+
+  status: "active" | "inactive";
+
+  createdAt: Date;
+  updatedAt: Date;
+}
 
 interface Registration {
   _id: string;
   millid: string;
   deviceId: string;
-  elpId: string;
+  elpId: Elp;
 
   gps: {
     latitude: number;
@@ -40,6 +62,7 @@ interface Registration {
 
 export default function RegistrationPage() {
   const [registrations, setRegistrations] = useState<Registration[]>([])
+  const [haulages, setHaulages] = useState<Haulage[]>([])
   const [selectedReg, setSelectedReg] = useState<Registration | null>(null)
   const [vehicleNumber, setVehicleNumber] = useState(selectedReg?.vehicleNumber || "");
 const [permitNumber, setPermitNumber] = useState(selectedReg?.documentNo || "");
@@ -100,6 +123,7 @@ const [loading, setLoading] = useState(false);
     const millid = user?.millid?._id;
     if (millid) {
       GetRegistrationsByMill(millid);
+      GetHoulagebyMill(millid);
     }
       setVehicleNumber(selectedReg?.vehicleNumber || "");
   setPermitNumber(selectedReg?.documentNo || "");
@@ -108,11 +132,21 @@ const [loading, setLoading] = useState(false);
 
   const GetRegistrationsByMill = async (millid: string) => {
     try {
-      const response = await getRegistrationbyMill(millid);
+      const response = await getRegistrationbyElp(millid);
       console.log("Registrations fetched by millid:", response.data);
       setRegistrations(response.data);
     } catch (error) {
       console.error("Error fetching registrations by millid:", error);
+    }
+  };
+
+  const GetHoulagebyMill = async (millid: string) => {
+    try {
+      const response = await getHaulages();
+      console.log("Haulages fetched:", response.data);
+      setHaulages(response.data);
+    } catch (error) {
+      console.error("Error fetching haulages by millid:", error);
     }
   };
 
@@ -164,24 +198,13 @@ const [loading, setLoading] = useState(false);
                         />
                         {/* Text Content */}
                         <div className="flex-1">
-                          <p className="font-sm text-foreground">{reg.elpId}</p>
+                          <p className="font-sm text-foreground">{reg.elpId.elpName}</p>
                           <p className="font-medium text-foreground">Reg: {reg.regid}</p>
-                          <p className="font-sm text-foreground">Doc: {reg.towerId}</p>
+                          <p className="font-sm text-foreground">Tower ID: {reg.towerId}</p>
                         </div>
                       </div>
-                           {/* Forgetting ELP Name update backend registration service */}
-                      {/* async getByMillId(millid: string, deviceId?: string) {
-  const query: any = { millid };
-
-  if (deviceId) query.deviceId = deviceId;
-
-  return this.registrationModel
-    .find(query)
-    .populate('millid')   // <-- populate MillInfo
-    .populate('deviceId') // <-- populate Device
-    .populate('elpId')    // <-- populate Elp
-    .exec();
-} */}
+                         
+                      
 
                       <div className="flex items-center gap-3">
                         <span
@@ -254,17 +277,19 @@ const [loading, setLoading] = useState(false);
               <div>
   <label className="text-sm font-semibold text-gray-700">Vehicle Type</label>
   <select
-    value={haulage}
-    onChange={(e) => setHaulage(e.target.value)}
-    className="w-full border border-gray-300 rounded-md p-2 mt-1"
-  >
-    <option value="">Select Vehicle Type</option>
-    <option value="Truck">Truck</option>
-    <option value="Trailer">Trailer</option>
-    <option value="Tipper">Tipper</option>
-    <option value="Crane">Crane</option>
-    {/* Add all haulage types your backend accepts */}
-  </select>
+  value={haulage}
+  onChange={(e) => setHaulage(e.target.value)}
+  className="w-full border border-gray-300 rounded-md p-2 mt-1"
+>
+  <option value="">Select Vehicle Type</option>
+
+  {haulages.map((type) => (
+    <option key={type._id} value={type._id}>
+      {type.haulageName}
+    </option>
+  ))}
+</select>
+
 </div>
 
 

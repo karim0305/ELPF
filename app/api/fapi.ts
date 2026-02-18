@@ -151,6 +151,15 @@ export const addRegistration = (data: any) =>
   );
 
 
+  export const getRegistrationbyElp = (
+  millid: string,
+) =>
+  axios.get(
+    `${baseUrl}/registration/registrationWithElp/${millid}`,
+  );
+
+
+
 export const getRegistrations = () =>
   axios.get(`${baseUrl}/registration`);
 
@@ -192,6 +201,7 @@ export const addHaulage = (data: any) =>
 // Get all haulages
 export const getHaulages = () =>
   axios.get(`${baseUrl}/haulage`);
+
 
 // Get haulage by ID
 export const getHaulageById = (id: string) =>
