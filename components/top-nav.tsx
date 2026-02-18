@@ -2,10 +2,11 @@
 
 import { cn } from "@/lib/utils"
 import { logoutUser } from "@/redux/slices/userSlice"
+import { RootState } from "@/redux/store"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
-import { useState } from "react"
-import { useDispatch } from "react-redux"
+import { useEffect, useState } from "react"
+import { useDispatch, useSelector } from "react-redux"
 
 interface NavItem {
   label: string
@@ -19,10 +20,36 @@ interface TopNavProps {
 }
 
 export function TopNav({ items, userRole }: TopNavProps) {
+    const user = useSelector((state: RootState) => state.users.currentUser);
     const dispatch = useDispatch();
   const pathname = usePathname()
   const router = useRouter()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+   const [userName, setUserName] = useState("");
+ const [millName, setMillName] = useState("");
+ const [logo , setLogo] = useState("");
+ const [millid, setMillid] = useState("");
+
+  useEffect(() => {
+      if (user) {
+        const userName = user.name || "User";
+        const millName = user.millid?.millname || "Mill";
+        const millid = user.millid?._id || "";
+        const logo = user.millid?.profilePicture || "";
+
+        setUserName(userName);
+        setMillName(millName);
+        setMillid(millid);
+        setLogo(logo);
+        console.log("Current User in AdminLayout:", user);
+        console.log("User Name:", userName);
+        console.log("Mill Name:", millName);
+        console.log("Mill ID:", millid);
+      }
+     
+  
+    }, [user]);
+
 
 const handleLogout = () => {
   // 1️⃣ Remove cookie
@@ -48,6 +75,14 @@ const handleLogout = () => {
           <div>
             <h1 className="text-lg font-bold text-foreground">SCLS</h1>
             <p className="text-xs text-muted-foreground -mt-1">Sugar Cane Loading</p>
+          </div>
+        </div>
+
+         <div className="flex items-center gap-2 min-w-fit">
+          <span className="text-2xl font-bold text-primary">{logo && <img src={logo} alt="Logo" className="h-8 w-8 rounded-full" />}</span>
+          <div>
+            <h1 className="text-lg font-bold text-foreground">{millName}</h1>
+            <p className="text-xs text-muted-foreground -mt-1">{userName}</p>
           </div>
         </div>
 

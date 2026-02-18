@@ -93,7 +93,7 @@ export const updateDeviceByImei = (imei: string, data: any) =>
 
 export const deleteDeviceByImei = (imei: string) =>
   axios.delete(`${baseUrl}/device/imei/${imei}`);
-
+ 
 /* ===================== MILL INFO ===================== */
 export const addMillInfo = (data: any) =>
   axios.post(`${baseUrl}/millinfo`, data);
@@ -134,16 +134,16 @@ export const deleteElp = (id: string) => axios.delete(`${baseUrl}/elp/${id}`);
 export const addRegistration = (data: any) =>
   axios.post(`${baseUrl}/registration`, data);
 
-export const getRegistrationsByMill = (
-  millid: string,
-  deviceId: string,
-) =>
-  axios.get(
-    `${baseUrl}/registration/by-mill/${millid}?deviceId=${deviceId}`,
-  );
+// export const getRegistrationsByMill = (
+//   millid: string,
+//   deviceId: string,
+// ) =>
+//   axios.get(
+//     `${baseUrl}/registration/by-mill/${millid}?deviceId=${deviceId}`,
+//   );
 
 
-  export const getRegForArrival = (
+  export const getRegistrationbyMill = (
   millid: string,
 ) =>
   axios.get(
