@@ -143,12 +143,12 @@ export const addRegistration = (data: any) =>
 //   );
 
 
-  export const getRegistrationbyMill = (
-  millid: string,
-) =>
-  axios.get(
-    `${baseUrl}/registration/by-mill/${millid}`,
-  );
+//   export const getRegistrationbyMill = (
+//   millid: string,
+// ) =>
+//   axios.get(
+//     `${baseUrl}/registration/by-mill/${millid}`,
+//   );
 
 
   export const getRegistrationbyElp = (

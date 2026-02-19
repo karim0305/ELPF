@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { LocationMap } from "@/components/location-map"
-import { getHaulages, getRegistrationbyElp, getRegistrationbyMill, updateRegistration } from "@/app/api/fapi"
+import { getHaulages, getRegistrationbyElp, updateRegistration } from "@/app/api/fapi"
 import { useSelector } from "react-redux"
 import { RootState } from "@/redux/store"
 
@@ -36,6 +36,7 @@ interface Elp {
 
 interface Registration {
   _id: string;
+  userid: string;
   millid: string;
   deviceId: string;
   elpId: Elp;
@@ -68,6 +69,17 @@ export default function RegistrationPage() {
 const [permitNumber, setPermitNumber] = useState(selectedReg?.documentNo || "");
 const [haulage, setHaulage] = useState(selectedReg?.haulage || "");
 const [loading, setLoading] = useState(false);
+ const user = useSelector((state: RootState) => state.users.currentUser);
+ useEffect(() => {
+    const millid = user?.millid?._id;
+    if (millid) {
+      GetRegistrationsByMill(millid);
+      GetHoulagebyMill(millid);
+    }
+      setVehicleNumber(selectedReg?.vehicleNumber || "");
+  setPermitNumber(selectedReg?.documentNo || "");
+  setHaulage(selectedReg?.haulage || "");
+  }, [registrations.length, selectedReg]);
 
 
 
@@ -84,6 +96,7 @@ const [loading, setLoading] = useState(false);
         documentNo: permitNumber,
         haulage,
         status: "Accepted",
+        userid: user?._id || ""
       });
       setSelectedReg(null);
     } catch (error) {
@@ -105,6 +118,7 @@ const [loading, setLoading] = useState(false);
       documentNo: permitNumber,
       haulage,
       status: "Rejected", // set status to Rejected
+      userid: user?._id || ""
     });
 
     // Close dialog
@@ -118,18 +132,8 @@ const [loading, setLoading] = useState(false);
 };
 
 
-  const user = useSelector((state: RootState) => state.users.currentUser);
-  useEffect(() => {
-    const millid = user?.millid?._id;
-    if (millid) {
-      GetRegistrationsByMill(millid);
-      GetHoulagebyMill(millid);
-    }
-      setVehicleNumber(selectedReg?.vehicleNumber || "");
-  setPermitNumber(selectedReg?.documentNo || "");
-  setHaulage(selectedReg?.haulage || "");
-  }, [registrations.length, selectedReg]);
-
+ 
+ 
   const GetRegistrationsByMill = async (millid: string) => {
     try {
       const response = await getRegistrationbyElp(millid);
@@ -171,7 +175,7 @@ const [loading, setLoading] = useState(false);
                 <CardTitle className="text-sm font-medium text-muted-foreground">Total Registrations</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold text-primary">{registrations.length}</div>
+                <div className="text-3xl font-bold text-primary">{registrations.filter((reg) => reg.status === "Pending").length}</div>
                 <p className="text-xs text-muted-foreground mt-1">Awaiting approval</p>
               </CardContent>
             </Card>
@@ -184,7 +188,9 @@ const [loading, setLoading] = useState(false);
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {registrations.map((reg) => (
+                  {registrations
+  .filter((reg) => reg.status === "Pending")
+  .map((reg) => (
                     <div
                       key={reg._id}
                       className="flex items-center justify-between p-4 bg-muted/30 rounded-lg hover:bg-muted/50 transition-colors border border-border/30"
@@ -229,7 +235,7 @@ const [loading, setLoading] = useState(false);
                   ))}
                 </div>
 
-                {registrations.length === 0 && (
+                {registrations.filter((reg) => reg.status === "Pending").length === 0 && (
                   <div className="text-center py-8">
                     <p className="text-muted-foreground">No registrations found</p>
                   </div>
