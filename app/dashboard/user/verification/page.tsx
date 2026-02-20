@@ -236,10 +236,7 @@ export default function VerificationPage() {
                       <label className="text-sm font-semibold text-gray-700">Vehicle Type</label>
                       <p className="text-base">{selectedVer.registrationDetails.vehicleType}</p>
                     </div>
-                    <div>
-                      <label className="text-sm font-semibold text-gray-700">Driver Name</label>
-                      <p className="text-base">{selectedVer.registrationDetails.driverName}</p>
-                    </div>
+                  
                     <div>
                       <label className="text-sm font-semibold text-gray-700">Vehicle Location</label>
                       <p className="text-base">{selectedVer.registrationDetails.vehicleLocation}</p>
@@ -289,6 +286,11 @@ export default function VerificationPage() {
                       <label className="text-sm font-semibold text-gray-700">Arrival Time</label>
                       <p className="text-base">{selectedVer.arrivalDetails.arrivalTime}</p>
                     </div>
+                      <div>
+                      <label className="text-sm font-semibold text-gray-700">Vehicle Type</label>
+                      <p className="text-base">{selectedVer.registrationDetails.vehicleType}</p>
+                    </div>
+                  
                     <div>
                       <label className="text-sm font-semibold text-gray-700">Arrival Location</label>
                       <p className="text-base">{selectedVer.arrivalDetails.arrivalLocation}</p>
