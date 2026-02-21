@@ -18,7 +18,7 @@ const adminNav = [
     children: [
       { label: "Manage User", href: "/dashboard/admin/manage/users", icon: "👥" },
       { label: "Manage LP", href: "/dashboard/admin/manage/loading-points", icon: "📍" },
-      { label: "Manage Haulage", href: "/dashboard/admin/manage/haulage", icon: "🚚" },
+
       { label: "Manage Devices", href: "/dashboard/admin/manage/devices", icon: "💻" },
 
     ],

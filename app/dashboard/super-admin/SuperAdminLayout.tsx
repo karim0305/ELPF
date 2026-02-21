@@ -12,6 +12,7 @@ interface SuperAdminLayoutProps {
 const superAdminNav = [
   { label: "All Mills", href: "/dashboard/super-admin/mills", icon: "🏭" },
   { label: "All Users", href: "/dashboard/super-admin/users", icon: "👥" },
+  { label: "Manage Haulage", href: "/dashboard/super-admin/haulage", icon: "🚚" },
 ]
 
 export function SuperAdminLayout({ children, username, title }: SuperAdminLayoutProps) {

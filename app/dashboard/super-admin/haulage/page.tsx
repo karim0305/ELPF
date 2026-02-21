@@ -14,7 +14,7 @@ import { useEffect, useState } from "react"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { SidebarNav } from "@/components/sidebar-nav"
-import { AdminLayout } from "../../AdminLayout"
+import { SuperAdminLayout } from "../SuperAdminLayout"
 import { useSelector } from "react-redux"
 import { RootState } from "@/redux/store"
 import { Mill, setError, setLoading } from "@/redux/slices/userSlice"
@@ -207,7 +207,7 @@ const handleDelete = async (id: string) => {
 
 
   return (
-         <AdminLayout username={userName} millName={millName} >
+            <SuperAdminLayout title="Administrator" username={userName}  >
     <div className="flex bg-background min-h-screen">
 
 
@@ -371,6 +371,6 @@ const handleDelete = async (id: string) => {
         </div>
       </div>
     </div>
-    </AdminLayout>
+    </SuperAdminLayout>
   )
 }
