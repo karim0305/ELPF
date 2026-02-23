@@ -214,3 +214,35 @@ export const updateHaulage = (id: string, data: any) =>
 // Delete haulage by ID
 export const deleteHaulage = (id: string) =>
   axios.delete(`${baseUrl}/haulage/${id}`);
+
+
+
+
+/* ===================== VERIFICATIONS ===================== */
+
+// Create verification
+export const addVerification = (data: any) =>
+  axios.post(`${baseUrl}/verification`, data);
+
+// Get all verifications
+export const getVerifications = () =>
+  axios.get(`${baseUrl}/verification`);
+
+// Get all verifications AND Arrivals
+export const getVerificationsAndArrivals = (millid: string) =>
+  axios.get(`${baseUrl}/verification/verification/${millid}`);
+
+
+
+// Get verification by ID
+export const getVerificationById = (id: string) =>
+  axios.get(`${baseUrl}/verification/${id}`);
+
+// Update verification by ID
+export const updateVerification = (id: string, data: any) =>
+  axios.patch(`${baseUrl}/verification/${id}`, data);
+
+// Delete verification by ID
+export const deleteVerification = (id: string) =>
+  axios.delete(`${baseUrl}/verification/${id}`);
+
