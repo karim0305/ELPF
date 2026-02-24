@@ -151,6 +151,13 @@ export const addRegistration = (data: any) =>
 //   );
 
 
+
+
+
+
+export const getRegistrations = () =>
+  axios.get(`${baseUrl}/registration`);
+
   export const getRegistrationbyElp = (
   millid: string,
 ) =>
@@ -158,10 +165,6 @@ export const addRegistration = (data: any) =>
     `${baseUrl}/registration/registrationWithElp/${millid}`,
   );
 
-
-
-export const getRegistrations = () =>
-  axios.get(`${baseUrl}/registration`);
 
 export const getRegistrationById = (id: string) =>
   axios.get(`${baseUrl}/registration/${id}`);
@@ -175,6 +178,14 @@ export const deleteRegistration = (id: string) =>
 /* ===================== ARRIVAL ===================== */
 export const addArrival = (data: any) =>
   axios.post(`${baseUrl}/arrival`, data);
+
+
+  export const GetArrivalbyMillidAndElp = (
+  millid: string,
+) =>
+  axios.get(
+    `${baseUrl}/arrival/ArrivalMillidWithElp/${millid}`,
+  );
  
 export const getArrivals = () =>
   axios.get(`${baseUrl}/arrival`);
@@ -184,6 +195,9 @@ export const getArrivalById = (id: string) =>
 
 export const updateArrivalStatus = (id: string, status: string) =>
   axios.put(`${baseUrl}/arrival/${id}/status`, { status });
+
+export const updateArrival = (id: string, data: any) =>
+  axios.patch(`${baseUrl}/arrival/${id}`, data);
 
 export const deleteArrival = (id: string) =>
   axios.delete(`${baseUrl}/arrival/${id}`);

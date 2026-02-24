@@ -14,7 +14,20 @@ interface Gps {
   longitude: number
 }
 
-export interface Arrival {
+interface Mill {
+  _id: string
+  millcode?: string
+  millname?: string
+  focalperson?: string
+  cnic?: string
+  phone?: string
+  address?: string
+  email?: string
+  profilePicture?: string
+  status?: string
+}
+
+interface Arrival {
   _id: string
   millid: string
   deviceId: string
@@ -32,29 +45,39 @@ export interface Arrival {
   status: string
 }
 
-export interface Registration {
+interface Registration {
   _id: string
-  userid: string
-  millid: string
-  deviceId: string
-  elpId: string
-  gps: Gps
-  towerId: string
-  regid: string
-  haulage: string
-  vehicleNumber: string
-  documentNo: string
-  driverImage: string
-  vehicleImage: string
-  permitImage: string
-  remarks: string
-  status: "ACCEPTED" | "REJECTED" | "PENDING"
-  arrivalData?: Arrival
+  userid?: string
+  millid?: string
+  deviceId?: string
+  elpId?: string
+  gps?: Gps
+  towerId?: string
+  regid?: string
+  haulage?: string
+  vehicleNumber?: string
+  documentNo?: string
+  driverImage?: string
+  vehicleImage?: string
+  permitImage?: string
+  remarks?: string
+  status?: "Accepted" | "Rejected" | "Pending"
+}
+
+interface Verification {
+  _id: string
+  millid: Mill
+  registrationid: Registration
+  arrivalid?: Arrival
+  status: string
+  remarks?: string
+  createdAt?: string
+  updatedAt?: string
 }
 
 export default function VerificationPage() {
-  const [verifications, setVerifications] = useState<Registration[]>([])
-  const [selectedVer, setSelectedVer] = useState<Registration | null>(null)
+  const [verifications, setVerifications] = useState<Verification[]>([])
+  const [selectedVer, setSelectedVer] = useState<Verification | null>(null)
 
   const user = useSelector((state: RootState) => state.users.currentUser)
 
@@ -74,58 +97,58 @@ export default function VerificationPage() {
     }
   }
 
- const handleAccept = async () => {
-  if (!selectedVer || !selectedVer.arrivalData) return;
+  const handleAccept = async () => {
+    if (!selectedVer) return;
 
-  try {
-    const payload = {
-      millid: selectedVer.millid,
-      registrationid: selectedVer._id,
-      arrivalid: selectedVer.arrivalData._id,
-      status: "ACCEPTED",
-      remarks: selectedVer.remarks || "",
-    };
+    try {
+      const payload = {
+        millid: selectedVer.millid?._id || selectedVer.millid,
+        registrationid: selectedVer.registrationid?._id || selectedVer.registrationid,
+        arrivalid: selectedVer.arrivalid?._id || selectedVer.arrivalid,
+        status: "Accepted",
+        remarks: selectedVer.remarks || "",
+      };
 
-    await addVerification(payload);
+      await addVerification(payload as any);
 
-    // Update UI after success
-    setVerifications((prev) =>
-      prev.map((v) =>
-        v._id === selectedVer._id ? { ...v, status: "ACCEPTED" } : v
-      )
-    );
+      // Update UI after success
+      setVerifications((prev) =>
+        prev.map((v) =>
+          v._id === selectedVer._id ? { ...v, status: "Accepted" } : v
+        )
+      );
 
-    setSelectedVer(null);
-  } catch (error) {
-    console.error("Error saving verification:", error);
-  }
-};
+      setSelectedVer(null);
+    } catch (error) {
+      console.error("Error saving verification:", error);
+    }
+  };
 
   const handleReject = async () => {
-    if (!selectedVer || !selectedVer.arrivalData) return;
+    if (!selectedVer) return;
 
-  try {
-    const payload = {
-      millid: selectedVer.millid,
-      registrationid: selectedVer._id,
-      arrivalid: selectedVer.arrivalData._id,
-      status: "REJECTED",
-      remarks: selectedVer.remarks || "",
-    };
+    try {
+      const payload = {
+        millid: selectedVer.millid?._id || selectedVer.millid,
+        registrationid: selectedVer.registrationid?._id || selectedVer.registrationid,
+        arrivalid: selectedVer.arrivalid?._id || selectedVer.arrivalid,
+        status: "Rejected",
+        remarks: selectedVer.remarks || "",
+      };
 
-    await addVerification(payload);
+      await addVerification(payload as any);
 
-    // Update UI after success
-    setVerifications((prev) =>
-      prev.map((v) =>
-        v._id === selectedVer._id ? { ...v, status: "REJECTED" } : v
-      )
-    );
+      // Update UI after success
+      setVerifications((prev) =>
+        prev.map((v) =>
+          v._id === selectedVer._id ? { ...v, status: "Rejected" } : v
+        )
+      );
 
-    setSelectedVer(null);
-  } catch (error) {
-    console.error("Error saving verification:", error);
-  }
+      setSelectedVer(null);
+    } catch (error) {
+      console.error("Error saving verification:", error);
+    }
   }
 
   return (
@@ -167,19 +190,19 @@ export default function VerificationPage() {
                     >
                       <div>
                         <p className="font-medium">
-                          {ver.vehicleNumber}
+                          {ver.registrationid?.vehicleNumber || "-"}
                         </p>
                         <p className="text-sm text-muted-foreground">
-                          Reg: {ver.regid}
+                          Reg: {ver.registrationid?.regid || "-"}
                         </p>
                       </div>
 
                       <div className="flex items-center gap-3">
                         <span
                           className={`text-xs px-2 py-1 rounded font-medium ${
-                            ver.status === "ACCEPTED"
+                            ver.status === "Accepted"
                               ? "bg-green-200 text-green-700"
-                              : ver.status === "REJECTED"
+                              : ver.status === "Rejected"
                               ? "bg-red-200 text-red-700"
                               : "bg-yellow-200 text-yellow-700"
                           }`}
@@ -226,23 +249,29 @@ export default function VerificationPage() {
                 <h3 className="font-semibold text-lg">
                   Registration
                 </h3>
+                <p><strong>Vehicle:</strong> {selectedVer.registrationid?.vehicleNumber || "-"}</p>
+                <p><strong>Reg ID:</strong> {selectedVer.registrationid?.regid || "-"}</p>
+                <p><strong>Permit:</strong> {selectedVer.registrationid?.documentNo || "-"}</p>
+                <p><strong>Type:</strong> {selectedVer.registrationid?.haulage || "-"}</p>
 
-                <p><strong>Vehicle:</strong> {selectedVer.vehicleNumber}</p>
-                <p><strong>Reg ID:</strong> {selectedVer.regid}</p>
-                <p><strong>Permit:</strong> {selectedVer.documentNo}</p>
-                <p><strong>Type:</strong> {selectedVer.haulage}</p>
-                <p>
-                  <strong>Location:</strong>{" "}
-                  {selectedVer.gps.latitude},{" "}
-                  {selectedVer.gps.longitude}
-                </p>
+                {selectedVer.registrationid?.gps ? (
+                  <>
+                    <p>
+                      <strong>Location:</strong>{" "}
+                      {selectedVer.registrationid.gps.latitude},{" "}
+                      {selectedVer.registrationid.gps.longitude}
+                    </p>
 
-                <LocationMap location={selectedVer.gps} height="h-40 w-full" />
+                    <LocationMap location={selectedVer.registrationid.gps} height="h-40 w-full" />
+                  </>
+                ) : (
+                  <p className="text-muted-foreground">No registration location</p>
+                )}
 
                 <div className="grid grid-cols-3 gap-2">
-                  <img src={selectedVer.permitImage} className="rounded border" />
-                  <img src={selectedVer.driverImage} className="rounded border" />
-                  <img src={selectedVer.vehicleImage} className="rounded border" />
+                  <img src={selectedVer.registrationid?.permitImage} className="rounded border" />
+                  <img src={selectedVer.registrationid?.driverImage} className="rounded border" />
+                  <img src={selectedVer.registrationid?.vehicleImage} className="rounded border" />
                 </div>
               </div>
 
@@ -251,28 +280,33 @@ export default function VerificationPage() {
                 <h3 className="font-semibold text-lg">
                   Arrival
                 </h3>
-
-                {selectedVer.arrivalData ? (
+                {selectedVer.arrivalid ? (
                   <>
-                    <p><strong>Vehicle:</strong> {selectedVer.arrivalData.vehicleNumber}</p>
-                    <p><strong>Reg ID:</strong> {selectedVer.arrivalData.regid}</p>
-                    <p><strong>Permit:</strong> {selectedVer.arrivalData.documentNo}</p>
-                    <p><strong>Type:</strong> {selectedVer.arrivalData.haulage}</p>
-                    <p>
-                      <strong>Location:</strong>{" "}
-                      {selectedVer.arrivalData.gps.latitude},{" "}
-                      {selectedVer.arrivalData.gps.longitude}
-                    </p>
+                    <p><strong>Vehicle:</strong> {selectedVer.arrivalid.vehicleNumber}</p>
+                    <p><strong>Reg ID:</strong> {selectedVer.arrivalid.regid}</p>
+                    <p><strong>Permit:</strong> {selectedVer.arrivalid.documentNo}</p>
+                    <p><strong>Type:</strong> {selectedVer.arrivalid.haulage}</p>
+                    {selectedVer.arrivalid.gps ? (
+                      <>
+                        <p>
+                          <strong>Location:</strong>{" "}
+                          {selectedVer.arrivalid.gps.latitude},{" "}
+                          {selectedVer.arrivalid.gps.longitude}
+                        </p>
 
-                    <LocationMap
-                      location={selectedVer.arrivalData.gps}
-                      height="h-40 w-full"
-                    />
+                        <LocationMap
+                          location={selectedVer.arrivalid.gps}
+                          height="h-40 w-full"
+                        />
+                      </>
+                    ) : (
+                      <p className="text-muted-foreground">No arrival location</p>
+                    )}
 
                     <div className="grid grid-cols-3 gap-2">
-                      <img src={selectedVer.arrivalData.permitImage} className="rounded border" />
-                      <img src={selectedVer.arrivalData.driverImage} className="rounded border" />
-                      <img src={selectedVer.arrivalData.vehicleImage} className="rounded border" />
+                      <img src={selectedVer.arrivalid.permitImage} className="rounded border" />
+                      <img src={selectedVer.arrivalid.driverImage} className="rounded border" />
+                      <img src={selectedVer.arrivalid.vehicleImage} className="rounded border" />
                     </div>
                   </>
                 ) : (

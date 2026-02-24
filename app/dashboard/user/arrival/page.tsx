@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { LocationMap } from "@/components/location-map"
-import { getHaulages, getRegistrationbyElp, updateRegistration } from "@/app/api/fapi"
+import { addVerification, GetArrivalbyMillidAndElp, getHaulages, updateArrival, updateRegistration } from "@/app/api/fapi"
 import { useSelector } from "react-redux"
 import { RootState } from "@/redux/store"
 
@@ -79,7 +79,7 @@ const [loading, setLoading] = useState(false);
       setVehicleNumber(selectedReg?.vehicleNumber || "");
   setPermitNumber(selectedReg?.documentNo || "");
   setHaulage(selectedReg?.haulage || "");
-  }, [registrations.length, selectedReg]);
+  }, [selectedReg]);
 
 
 
@@ -91,7 +91,7 @@ const [loading, setLoading] = useState(false);
     if (!selectedReg) return;
     setLoading(true);
     try {
-      await updateRegistration(selectedReg._id, {
+      await updateArrival(selectedReg._id, {
         vehicleNumber,
         documentNo: permitNumber,
         haulage,
@@ -99,6 +99,8 @@ const [loading, setLoading] = useState(false);
         userid: user?._id || ""
       });
       setSelectedReg(null);
+      AddInVerification();
+
     } catch (error) {
       console.error(error);
     } finally {
@@ -107,13 +109,40 @@ const [loading, setLoading] = useState(false);
   }
 
 
+ const AddInVerification = async () => {
+  if (!selectedReg) return;
+
+  try {
+    const payload = {
+      millid: selectedReg.millid,
+      registrationid: selectedReg._id,
+      arrivalid: selectedReg._id,
+      status: "Pending",
+      remarks: selectedReg.remarks || "",
+    };
+
+    await addVerification(payload);
+
+    // Update UI after success
+    setRegistrations((prev) =>
+      prev.map((v) =>
+        v._id === selectedReg._id ? { ...v, status: "Accepted" } : v
+      )
+    );
+
+    setSelectedReg(null);
+  } catch (error) {
+    console.error("Error saving verification:", error);
+  }
+};
+
 
  const handleReject = async (selectedReg: Arrivals) => {
   if (!selectedReg) return;
   setLoading(true);
 
   try {
-    await updateRegistration(selectedReg._id, {
+    await updateArrival(selectedReg._id, {
       vehicleNumber,
       documentNo: permitNumber,
       haulage,
@@ -136,7 +165,7 @@ const [loading, setLoading] = useState(false);
  
   const GetArrivalsByMill = async (millid: string) => {
     try {
-      const response = await getRegistrationbyElp(millid);
+      const response = await GetArrivalbyMillidAndElp(millid);
       console.log("Arrivals fetched by millid:", response.data);
       setRegistrations(response.data);
     } catch (error) {
@@ -250,14 +279,14 @@ const [loading, setLoading] = useState(false);
       <Dialog open={!!selectedReg} onOpenChange={() => setSelectedReg(null)}>
         <DialogContent className="!max-w-[1200px] !max-h-[100vh] !overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Registration Details</DialogTitle>
+            <DialogTitle>Arrival Details</DialogTitle>
             <DialogDescription>Vehicle Registration - {selectedReg?.vehicleNumber}</DialogDescription>
           </DialogHeader>
           {selectedReg && (<div className="space-y-0">
             <div className="space-y-0">
               <div className="grid grid-cols-2 gap-2">
                  <div>
-      <label className="text-sm font-semibold text-gray-700">Registration Number</label>
+      <label className="text-sm font-semibold text-gray-700">Arrival Number</label>
        <p className="text-base">{selectedReg.regid}</p> 
        </div>
               <div>
