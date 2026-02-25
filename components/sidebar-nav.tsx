@@ -6,12 +6,15 @@ import { usePathname, useRouter } from "next/navigation"
 import { useState } from "react"
 import { logoutUser } from "@/redux/slices/userSlice"
 import { useDispatch } from "react-redux"
+import logo from "@/src/logo5.png"
+import Image from "next/image"
+import { LogOut } from "lucide-react"
 
 interface NavItem {
-  label: string
-  href?: string
-  icon: string
-  children?: NavItem[]
+  label: string;
+  href?: string;
+  icon: React.ReactNode;
+  children?: NavItem[];
 }
 
 interface SidebarNavProps {
@@ -19,7 +22,6 @@ interface SidebarNavProps {
   title: string
   userRole: string
 }
-
 
 export function SidebarNav({ items, title, userRole }: SidebarNavProps) {
   const dispatch = useDispatch();
@@ -49,8 +51,11 @@ const handleLogout = () => {
     <div className="w-64 bg-card border-r border-border/50 flex flex-col h-screen">
       {/* Header */}
       <div className="p-6 border-b border-border/50">
-        <h1 className="text-2xl font-bold text-primary">🌱 SCLS</h1>
-        <p className="text-xs text-muted-foreground mt-1">Sugar Cane Loading System</p>
+        <div className="flex items-center">
+          <Image src={logo} alt="Logo" width={150} height={150} />
+        
+        </div>
+        <p className="text-xs text-muted-foreground pl-2"> Sugar Cane Loading System</p>
       </div>
 
       {/* Nav Items */}
@@ -106,8 +111,7 @@ const handleLogout = () => {
                           isChildActive
                             ? "bg-primary/10 text-primary"
                             : "text-muted-foreground hover:bg-secondary/10 hover:text-secondary",
-                        )}
-                      >
+                        )}>
                         <span className="text-lg w-6">{child.icon}</span>
                         <span>{child.label}</span>
                       </Link>
@@ -126,7 +130,7 @@ const handleLogout = () => {
           onClick={handleLogout}
           className="w-full flex items-center gap-3 px-4 py-2 rounded-lg text-sm text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
         >
-          <span>🚪</span>
+          <span className="text-lg"><LogOut /></span>
           <span>Logout</span>
         </button>
       </div>

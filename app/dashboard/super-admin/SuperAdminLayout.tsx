@@ -2,6 +2,7 @@
 
 import { ReactNode } from "react"
 import { SidebarNav } from "@/components/sidebar-nav"
+import { Factory, Users, Truck } from "lucide-react"
 
 interface SuperAdminLayoutProps {
   children: ReactNode
@@ -10,9 +11,9 @@ interface SuperAdminLayoutProps {
 }
 
 const superAdminNav = [
-  { label: "All Mills", href: "/dashboard/super-admin/mills", icon: "🏭" },
-  { label: "All Users", href: "/dashboard/super-admin/users", icon: "👥" },
-  { label: "Manage Haulage", href: "/dashboard/super-admin/haulage", icon: "🚚" },
+  { label: "All Mills", href: "/dashboard/super-admin/mills", icon: <Factory /> },
+  { label: "All Users", href: "/dashboard/super-admin/users", icon: <Users /> },
+  { label: "Manage Haulage", href: "/dashboard/super-admin/haulage", icon: <Truck /> },
 ]
 
 export function SuperAdminLayout({ children, username, title }: SuperAdminLayoutProps) {

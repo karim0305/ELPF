@@ -7,6 +7,9 @@ import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import { useDispatch, useSelector } from "react-redux"
+import logos from "@/src/logo5.png"
+import Image from "next/image"
+import { Bell, LogOut } from "lucide-react"
 
 interface NavItem {
   label: string
@@ -71,10 +74,10 @@ const handleLogout = () => {
       <div className="flex items-center justify-between h-20 px-6">
         {/* Left: Logo and Company Name */}
         <div className="flex items-center gap-2 min-w-fit">
-          <span className="text-2xl font-bold text-primary">🌱</span>
+              <Image src={logos} alt="Logo" width={150} height={150} />
           <div>
-            <h1 className="text-lg font-bold text-foreground">SCLS</h1>
-            <p className="text-xs text-muted-foreground -mt-1">Sugar Cane Loading</p>
+            
+            <p className="text-xs text-muted-foreground mt-2">Sugar Cane Loading</p>
           </div>
         </div>
 
@@ -108,7 +111,7 @@ const handleLogout = () => {
           })}
 
           <button className="relative flex flex-col items-center gap-1 px-3 py-2 rounded-lg text-xs text-muted-foreground hover:bg-secondary/10 hover:text-secondary transition-colors ml-2">
-            <span className="text-3xl">🔔</span>
+            <span className="text-3xl"><Bell /></span>
             <span>Notification</span>
             <span className="absolute top-0 right-0 bg-destructive text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
               100
@@ -119,7 +122,7 @@ const handleLogout = () => {
             onClick={handleLogout}
             className="flex flex-col items-center gap-1 px-3 py-2 rounded-lg text-xs text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors ml-2 border-l border-border/50 pl-6"
           >
-            <span className="text-3xl">🚪</span>
+            <span className="text-3xl"><LogOut /></span>
             <span>Logout</span>
           </button>
         </div>
@@ -156,7 +159,7 @@ const handleLogout = () => {
             )
           })}
           <button className="w-full relative flex items-center gap-3 px-4 py-2 rounded-lg text-sm text-muted-foreground hover:bg-secondary/10 hover:text-secondary transition-colors">
-            <span className="text-2xl">🔔</span>
+            <span className="text-2xl"><Bell /></span>
             <span>Notification</span>
             <span className="absolute top-1 right-4 bg-destructive text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
               100
@@ -166,7 +169,7 @@ const handleLogout = () => {
             onClick={handleLogout}
             className="w-full flex items-center gap-3 px-4 py-2 rounded-lg text-sm text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
           >
-            <span className="text-2xl">🚪</span>
+            <span className="text-2xl"><LogOut /></span>
             <span>Logout</span>
           </button>
         </div>

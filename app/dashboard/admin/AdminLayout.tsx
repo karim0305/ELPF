@@ -3,6 +3,7 @@
 
 import { ReactNode } from "react"
 import { SidebarNav } from "@/components/sidebar-nav"
+import { Factory, Users, Laptop, Settings, Check, Map } from "lucide-react"
 
 interface AdminLayoutProps {
   children: ReactNode
@@ -11,19 +12,17 @@ interface AdminLayoutProps {
 }
 
 const adminNav = [
-  { label: "Dashboard", href: "/dashboard/admin", icon: "📊" },
+  { label: "Dashboard", href: "/dashboard/admin", icon: <Factory /> },
   {
     label: "Manage",
-    icon: "⚙️",
+    icon: <Settings />,
     children: [
-      { label: "Manage User", href: "/dashboard/admin/manage/users", icon: "👥" },
-      { label: "Manage LP", href: "/dashboard/admin/manage/loading-points", icon: "📍" },
-
-      { label: "Manage Devices", href: "/dashboard/admin/manage/devices", icon: "💻" },
-
+      { label: "Manage User", href: "/dashboard/admin/manage/users", icon: <Users /> },
+      { label: "Manage LP", href: "/dashboard/admin/manage/loading-points", icon: <Map /> },
+      { label: "Manage Devices", href: "/dashboard/admin/manage/devices", icon: <Laptop /> },
     ],
   },
-  { label: "Approve", href: "/dashboard/admin/approvals", icon: "✓" },
+  { label: "Approve", href: "/dashboard/admin/approvals", icon: <Check /> },
 ]
 
 export function AdminLayout({ children, username, millName }: AdminLayoutProps) {

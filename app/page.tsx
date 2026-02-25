@@ -12,6 +12,8 @@ import { login } from "@/app/api/fapi" // adjust path
 import { useToast } from "@/hooks/use-toast"
 import { useDispatch } from "react-redux"
 import { setCurrentUser, setLoading } from "@/redux/slices/userSlice"
+import logos from "@/src/logo5.png"
+import Image from "next/image"
 
 export default function LoginPage() {
   const router = useRouter()
@@ -110,13 +112,13 @@ export default function LoginPage() {
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="mb-8 text-center">
-          <div className="inline-block px-4 py-2 bg-primary/10 rounded-lg mb-4">
-            <h1 className="text-3xl font-bold text-primary">🌱</h1>
+          <div className="inline-block px-2 py-1  rounded-lg mb-2">
+               <Image src={logos} alt="Logo" width={250} height={250}  className="-ml-5"/>
           </div>
-          <h1 className="text-3xl font-bold text-foreground mb-2">Sugar Cane Loading System</h1>
+          <h1 className="text-2xl font-bold text-foreground mb-2">Sugar Cane Loading System</h1>
           <p className="text-sm text-muted-foreground">Electronic Loading Point Management Platform</p>
         </div>
-
+ 
         {/* Login Card */}
         <Card className="border-border/50 bg-card shadow-lg">
           <CardHeader className="space-y-1">

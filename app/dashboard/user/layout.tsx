@@ -3,14 +3,15 @@
 import { TopNav } from "@/components/top-nav"
 import { RootState } from "@/redux/store";
 import { useSelector } from "react-redux";
+import { BarChart2, PencilLine, MapPin, Check, FileText, BarChart } from "lucide-react"
 
 const userNav = [
-  { label: "Dashboard", href: "/dashboard/user", icon: "📊" },
-  { label: "Registration", href: "/dashboard/user/registration", icon: "📝" },
-  { label: "Arrival", href: "/dashboard/user/arrival", icon: "📍" },
-  { label: "Verification", href: "/dashboard/user/verification", icon: "✓" },
-  { label: "Reports", href: "/dashboard/user/reports", icon: "📈" },
-  { label: "Graph", href: "/dashboard/user/graph", icon: "📊" },
+  { label: "Dashboard", href: "/dashboard/user", icon: <BarChart2 /> },
+  { label: "Registration", href: "/dashboard/user/registration", icon: <PencilLine /> },
+  { label: "Arrival", href: "/dashboard/user/arrival", icon: <MapPin /> },
+  { label: "Verification", href: "/dashboard/user/verification", icon: <Check /> },
+  { label: "Reports", href: "/dashboard/user/reports", icon: <FileText /> },
+  { label: "Graph", href: "/dashboard/user/graph", icon: <BarChart /> },
 ]
 
 export default function UserLayout({
