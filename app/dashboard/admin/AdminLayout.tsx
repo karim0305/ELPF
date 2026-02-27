@@ -22,7 +22,14 @@ const adminNav = [
       { label: "Manage Devices", href: "/dashboard/admin/manage/devices", icon: <Laptop /> },
     ],
   },
-  { label: "Approve", href: "/dashboard/admin/approvals", icon: <Check /> },
+   {
+    label: "Reports",
+    icon: <Settings />,
+    children: [
+     { label: "Overall Reports", href: "/dashboard/admin/reports", icon: <Check /> },
+    ],
+  },
+ 
 ]
 
 export function AdminLayout({ children, username, millName }: AdminLayoutProps) {
