@@ -303,14 +303,22 @@ const handleStatusToggle = async (device: Device) => {
   </div>
 
   {/* Device Rows */}
-  <div className="space-y-2">
-    {devices.map((device) => (
+<div className="space-y-2">
+  {devices.length === 0 ? (
+    <div className="flex flex-col items-center justify-center py-10 text-muted-foreground">
+    <p className="text-sm font-medium">No Devices Found</p>
+    <p className="text-xs mt-1">This mill does not have any registered devices.</p>
+  </div>
+  ) : (
+    devices.map((device) => (
       <div
         key={device._id}
         className="flex flex-col md:flex-row items-start md:items-center justify-between p-3 bg-muted/30 rounded-lg hover:bg-muted/50 transition-colors"
       >
         {/* Device Brand */}
-        <div className="flex-1 font-medium text-foreground">{device.deviceBrand}</div>
+        <div className="flex-1 font-medium text-foreground">
+          {device.deviceBrand}
+        </div>
 
         {/* Device Model */}
         <div className="flex-1 text-xs text-muted-foreground mt-1 md:mt-0">
@@ -330,27 +338,28 @@ const handleStatusToggle = async (device: Device) => {
         {/* ELP Name */}
         <div className="flex-1 mt-1 md:mt-0">
           <span className="text-xs px-2 py-1 rounded bg-secondary/50 text-secondary-foreground">
-             {device.elpid ? device.elpid.elpName : 'No ELP exist'}
+            {device.elpid ? device.elpid.elpName : "No ELP exist"}
           </span>
         </div>
 
         {/* Status */}
-      {/* Status */}
-<div className="flex-1 mt-1 md:mt-0 flex items-center gap-2">
-  <span className="text-xs font-medium capitalize">{device.status}</span>
-  <Button
-    size="sm"
-    variant="outline"
-    onClick={() => handleStatusToggle(device)}
-    disabled={updatingStatusId === device._id}
-  >
-    {updatingStatusId === device._id
-      ? "..."
-      : device.status.toLowerCase() === "active"
-      ? "Deactivate"
-      : "Activate"}
-  </Button>
-</div>
+        <div className="flex-1 mt-1 md:mt-0 flex items-center gap-2">
+          <span className="text-xs font-medium capitalize">
+            {device.status}
+          </span>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => handleStatusToggle(device)}
+            disabled={updatingStatusId === device._id}
+          >
+            {updatingStatusId === device._id
+              ? "..."
+              : device.status.toLowerCase() === "active"
+              ? "Deactivate"
+              : "Activate"}
+          </Button>
+        </div>
 
         {/* Actions */}
         <div className="flex items-center gap-2 mt-2 md:mt-0">
@@ -372,8 +381,9 @@ const handleStatusToggle = async (device: Device) => {
           </Button>
         </div>
       </div>
-    ))}
-  </div>
+    ))
+  )}
+</div>
 </div>
 
 
