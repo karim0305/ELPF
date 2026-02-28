@@ -343,8 +343,8 @@ export default function RegistrationPage() {
 
 
 
-                <div className="w-full border border-gray-300 rounded-md p-2 mt-1">
-                  <label className="text-sm font-semibold">Vehicle Location</label>
+                <div>
+                  <label className="text-sm font-semibold text-gray-700">Vehicle Location</label>
                   <p className="text-base">
                     {selectedReg?.gps?.latitude ?? "N/A"}, {selectedReg?.gps?.longitude ?? "N/A"}
                   </p>

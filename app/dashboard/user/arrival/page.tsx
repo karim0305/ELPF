@@ -9,6 +9,7 @@ import { LocationMap } from "@/components/location-map"
 import { addVerification, GetArrivalbyMillidAndElp, getHaulages, updateArrival, updateRegistration } from "@/app/api/fapi"
 import { useSelector } from "react-redux"
 import { RootState } from "@/redux/store"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 interface Haulage {
   _id: string;
@@ -120,7 +121,7 @@ const [loading, setLoading] = useState(false);
       status: "Pending",
       remarks: selectedReg.remarks || "",
     };
-
+ 
     await addVerification(payload);
 
     // Update UI after success
@@ -276,111 +277,161 @@ const [loading, setLoading] = useState(false);
       </div>
 
       {/* View Details Modal */}
-      <Dialog open={!!selectedReg} onOpenChange={() => setSelectedReg(null)}>
-        <DialogContent className="!max-w-[1200px] !max-h-[100vh] !overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Arrival Details</DialogTitle>
-            <DialogDescription>Vehicle Registration - {selectedReg?.vehicleNumber}</DialogDescription>
-          </DialogHeader>
-          {selectedReg && (<div className="space-y-0">
-            <div className="space-y-0">
-              <div className="grid grid-cols-2 gap-2">
-                 <div>
-      <label className="text-sm font-semibold text-gray-700">Arrival Number</label>
-       <p className="text-base">{selectedReg.regid}</p> 
-       </div>
-              <div>
-  <label className="text-sm font-semibold text-gray-700">Vehicle Number</label>
-  <input
-    type="text"
-    value={vehicleNumber}
-    onChange={(e) => setVehicleNumber(e.target.value)}
-    className="w-full border border-gray-300 rounded-md p-2 mt-1"
-    placeholder="Enter Vehicle Number"
-  />
-</div>
-               <div>
-  <label className="text-sm font-semibold text-gray-700">Permit Number</label>
-  <input
-    type="text"
-    value={permitNumber}
-    onChange={(e) => setPermitNumber(e.target.value)}
-    className="w-full border border-gray-300 rounded-md p-2 mt-1"
-    placeholder="Enter Permit Number"
-  />
-</div>
-              <div>
-  <label className="text-sm font-semibold text-gray-700">Vehicle Type</label>
-  <select
-  value={haulage}
-  onChange={(e) => setHaulage(e.target.value)}
-  className="w-full border border-gray-300 rounded-md p-2 mt-1"
->
-  <option value="">Select Vehicle Type</option>
+ <Dialog open={!!selectedReg} onOpenChange={() => setSelectedReg(null)}>
+  <DialogContent className="!max-w-[1200px] !max-h-[100vh] !overflow-y-auto">
+    <DialogHeader>
+      <DialogTitle>Arrival Details</DialogTitle>
+      <DialogDescription>
+        Vehicle Registration - {selectedReg?.vehicleNumber}
+      </DialogDescription>
+    </DialogHeader>
 
-  {haulages.map((type) => (
-    <option key={type._id} value={type._id}>
-      {type.haulageName}
-    </option>
-  ))}
-</select>
+    {selectedReg && (
+      <div className="space-y-0">
+        <div className="space-y-0">
+          <div className="grid grid-cols-2 gap-2">
 
-</div>
+            {/* Arrival Number */}
+            <div className="w-full border border-gray-300 rounded-md p-2 mt-1">
+              <label className="text-sm font-medium text-foreground">
+                Arrival Number
+              </label>
+              <p className="text-base">{selectedReg.regid}</p>
+            </div>
 
+            {/* Vehicle Number */}
+            <div className="w-full border border-gray-300 rounded-md p-2 mt-1">
+              <label className="text-sm font-medium text-foreground">
+                Vehicle Number
+              </label>
+              <input
+                type="text"
+                value={vehicleNumber}
+                onChange={(e) => setVehicleNumber(e.target.value)}
+                className="w-full border border-gray-300 rounded-md p-2 mt-1"
+                placeholder="Enter Vehicle Number"
+              />
+            </div>
 
-                {/* <div> <label className="text-sm font-semibold text-gray-700">Driver Name</label>
-        <p className="text-base">{selectedReg.driverImage}</p>
-         </div>  */}
+            {/* Permit Number */}
+            <div className="w-full border border-gray-300 rounded-md p-2 mt-1">
+              <label className="text-sm font-medium text-foreground">
+                Permit Number
+              </label>
+              <input
+                type="text"
+                value={permitNumber}
+                onChange={(e) => setPermitNumber(e.target.value)}
+                className="w-full border border-gray-300 rounded-md p-2 mt-1"
+                placeholder="Enter Permit Number"
+              />
+            </div>
 
+            {/* Vehicle Type */}
+            <div className="w-full border border-gray-300 rounded-md p-2 mt-1">
+              <label className="text-sm font-medium text-foreground">
+                Vehicle Type
+              </label>
+              <Select
+                value={haulage}
+                onValueChange={(value) => setHaulage(value)}
+              >
+                <SelectTrigger className="w-full mt-1 bg-muted border-border/50">
+                  <SelectValue placeholder="Select Vehicle Type" />
+                </SelectTrigger>
+                <SelectContent className="bg-card border-border/50">
+                  {haulages.length > 0 ? (
+                    haulages.map((type) => (
+                      <SelectItem key={type._id} value={type._id}>
+                        {type.haulageName}
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <SelectItem value="no-data" disabled>
+                      No Vehicle Types Available
+                    </SelectItem>
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
 
-                <div>
-                  <label className="text-sm font-semibold text-gray-700">Vehicle Location</label>
-                  <p className="text-base">
-                    {selectedReg?.gps?.latitude ?? "N/A"}, {selectedReg?.gps?.longitude ?? "N/A"}
-                  </p>
-                </div>
+            {/* Vehicle Location */}
+            <div className="w-full border border-gray-300 rounded-md p-2 mt-1">
+              <label className="text-sm font-medium text-foreground">
+                Vehicle Location
+              </label>
+              <p className="text-base">
+                {selectedReg?.gps?.latitude ?? "N/A"}, {selectedReg?.gps?.longitude ?? "N/A"}
+              </p>
+            </div>
 
+            {/* Optional: Driver Name or Tower ID if needed */}
+            {selectedReg.towerId && (
+              <div className="w-full border border-gray-300 rounded-md p-2 mt-1">
+                <label className="text-sm font-medium text-foreground">
+                  Tower ID
+                </label>
+                <p className="text-base">{selectedReg.towerId}</p>
               </div>
+            )}
+          </div>
 
+          {/* Documents */}
+          <div>
+            <label className="text-sm font-semibold text-gray-700 block mb-3">
+              Documents
+            </label>
+            <div className="grid grid-cols-3 gap-2">
+              <img
+                src={selectedReg.vehicleImage || "/placeholder.svg"}
+                alt="Vehicle"
+                className="w-full h-30 object-cover rounded-lg border border-gray-300"
+              />
+              <img
+                src={selectedReg.permitImage || "/placeholder.svg"}
+                alt="Permit"
+                className="w-full h-30 object-cover rounded-lg border border-gray-300"
+              />
+              <img
+                src={selectedReg.driverImage || "/placeholder.svg"}
+                alt="Driver"
+                className="w-full h-30 object-cover rounded-lg border border-gray-300"
+              />
+            </div>
+          </div>
 
-              <div> <label className="text-sm font-semibold text-gray-700 block mb-3">Documents</label> <div className="grid grid-cols-3 gap-2">
-                <img src={selectedReg.vehicleImage || "/placeholder.svg"} alt="Vehicle" className="w-full h-30 object-cover rounded-lg border border-gray-300" />
-                <img src={selectedReg.permitImage || "/placeholder.svg"} alt="Permit" className="w-full h-30 object-cover rounded-lg border border-gray-300" />
-                <img src={selectedReg.driverImage || "/placeholder.svg"} alt="Driver" className="w-full h-30 object-cover rounded-lg border border-gray-300" />
-              </div>
-              </div>
-              <div>
-                <label className="text-sm font-semibold text-gray-700 block mb-2">Location Map</label>
-                <LocationMap
-                  location={{
-                    latitude: selectedReg.gps.latitude,
-                    longitude: selectedReg.gps.longitude,
-                  }}
-                  height="h-[200px]"
-                />
+          {/* Location Map */}
+          <div>
+            <label className="text-sm font-semibold text-gray-700 block mb-2">
+              Location Map
+            </label>
+            <LocationMap
+              location={{
+                latitude: selectedReg.gps.latitude,
+                longitude: selectedReg.gps.longitude,
+              }}
+              height="h-[200px]"
+            />
+          </div>
+        </div>
 
-
-              </div> </div> <div className="flex gap-3 justify-end pt-4 border-t">
-              <Button
-  onClick={() => handleReject(selectedReg)}
-  variant="destructive"
->
-  Reject
-</Button>
-
-             
-<Button
-  className="bg-green-600 hover:bg-green-700"
-  disabled={loading}
-  onClick={async () => handleAccept(selectedReg)}
->
-  {loading ? "Updating..." : "Accept"}
-</Button>
-                
-                </div> </div>)}
-
-        </DialogContent>
-      </Dialog>
+        {/* Action Buttons */}
+        <div className="flex gap-3 justify-end pt-4 border-t">
+          <Button onClick={() => handleReject(selectedReg)} variant="destructive">
+            Reject
+          </Button>
+          <Button
+            className="bg-green-600 hover:bg-green-700"
+            disabled={loading}
+            onClick={async () => handleAccept(selectedReg)}
+          >
+            {loading ? "Updating..." : "Accept"}
+          </Button>
+        </div>
+      </div>
+    )}
+  </DialogContent>
+</Dialog>
     </div>
   )
 }
