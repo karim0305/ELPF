@@ -9,6 +9,7 @@ import { LocationMap } from "@/components/location-map"
 import { getHaulages, getRegistrationbyElp, updateRegistration } from "@/app/api/fapi"
 import { useSelector } from "react-redux"
 import { RootState } from "@/redux/store"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 interface Haulage {
   _id: string;
@@ -66,19 +67,19 @@ export default function RegistrationPage() {
   const [haulages, setHaulages] = useState<Haulage[]>([])
   const [selectedReg, setSelectedReg] = useState<Registration | null>(null)
   const [vehicleNumber, setVehicleNumber] = useState(selectedReg?.vehicleNumber || "");
-const [permitNumber, setPermitNumber] = useState(selectedReg?.documentNo || "");
-const [haulage, setHaulage] = useState(selectedReg?.haulage || "");
-const [loading, setLoading] = useState(false);
- const user = useSelector((state: RootState) => state.users.currentUser);
- useEffect(() => {
+  const [permitNumber, setPermitNumber] = useState(selectedReg?.documentNo || "");
+  const [haulage, setHaulage] = useState(selectedReg?.haulage || "");
+  const [loading, setLoading] = useState(false);
+  const user = useSelector((state: RootState) => state.users.currentUser);
+  useEffect(() => {
     const millid = user?.millid?._id;
     if (millid) {
       GetRegistrationsByMill(millid);
       GetHoulagebyMill(millid);
     }
-      setVehicleNumber(selectedReg?.vehicleNumber || "");
-  setPermitNumber(selectedReg?.documentNo || "");
-  setHaulage(selectedReg?.haulage || "");
+    setVehicleNumber(selectedReg?.vehicleNumber || "");
+    setPermitNumber(selectedReg?.documentNo || "");
+    setHaulage(selectedReg?.haulage || "");
   }, [registrations.length, selectedReg]);
 
 
@@ -87,7 +88,7 @@ const [loading, setLoading] = useState(false);
     setSelectedReg(reg)
   }
 
-  const handleAccept = async ( selectedReg: Registration) => {
+  const handleAccept = async (selectedReg: Registration) => {
     if (!selectedReg) return;
     setLoading(true);
     try {
@@ -108,32 +109,32 @@ const [loading, setLoading] = useState(false);
 
 
 
- const handleReject = async (selectedReg: Registration) => {
-  if (!selectedReg) return;
-  setLoading(true);
+  const handleReject = async (selectedReg: Registration) => {
+    if (!selectedReg) return;
+    setLoading(true);
 
-  try {
-    await updateRegistration(selectedReg._id, {
-      vehicleNumber,
-      documentNo: permitNumber,
-      haulage,
-      status: "Rejected", // set status to Rejected
-      userid: user?._id || ""
-    });
+    try {
+      await updateRegistration(selectedReg._id, {
+        vehicleNumber,
+        documentNo: permitNumber,
+        haulage,
+        status: "Rejected", // set status to Rejected
+        userid: user?._id || ""
+      });
 
-    // Close dialog
-    setSelectedReg(null);
+      // Close dialog
+      setSelectedReg(null);
 
-  } catch (error) {
-    console.error("Failed to reject registration:", error);
-  } finally {
-    setLoading(false);
-  }
-};
+    } catch (error) {
+      console.error("Failed to reject registration:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
 
- 
- 
+
+
   const GetRegistrationsByMill = async (millid: string) => {
     try {
       const response = await getRegistrationbyElp(millid);
@@ -189,50 +190,50 @@ const [loading, setLoading] = useState(false);
               <CardContent>
                 <div className="space-y-3">
                   {registrations
-  .filter((reg) => reg.status === "Pending")
-  .map((reg) => (
-                    <div
-                      key={reg._id}
-                      className="flex items-center justify-between p-4 bg-muted/30 rounded-lg hover:bg-muted/50 transition-colors border border-border/30"
-                    >
-                      <div className="flex items-start gap-3">
-                        {/* Avatar */}
-                        <img
-                          src={reg.driverImage}
-                          alt="Driver"
-                          className="w-16 h-16 rounded-full object-cover object-[50%_30%] scale-110 border"
-                        />
-                        {/* Text Content */}
-                        <div className="flex-1">
-                          <p className="font-sm text-foreground">{reg.elpId.elpName}</p>
-                          <p className="font-medium text-foreground">Reg: {reg.regid}</p>
-                          <p className="font-sm text-foreground">Tower ID: {reg.towerId}</p>
+                    .filter((reg) => reg.status === "Pending")
+                    .map((reg) => (
+                      <div
+                        key={reg._id}
+                        className="flex items-center justify-between p-4 bg-muted/30 rounded-lg hover:bg-muted/50 transition-colors border border-border/30"
+                      >
+                        <div className="flex items-start gap-3">
+                          {/* Avatar */}
+                          <img
+                            src={reg.driverImage}
+                            alt="Driver"
+                            className="w-16 h-16 rounded-full object-cover object-[50%_30%] scale-110 border"
+                          />
+                          {/* Text Content */}
+                          <div className="flex-1">
+                            <p className="font-sm text-foreground">{reg.elpId.elpName}</p>
+                            <p className="font-medium text-foreground">Reg: {reg.regid}</p>
+                            <p className="font-sm text-foreground">Tower ID: {reg.towerId}</p>
+                          </div>
                         </div>
-                      </div>
-                         
-                      
 
-                      <div className="flex items-center gap-3">
-                        <span
-                          className={`text-xs px-2 py-1 rounded font-medium ${reg.status === "Accepted"
+
+
+                        <div className="flex items-center gap-3">
+                          <span
+                            className={`text-xs px-2 py-1 rounded font-medium ${reg.status === "Accepted"
                               ? "bg-primary/20 text-primary"
                               : reg.status === "Rejected"
                                 ? "bg-destructive/20 text-destructive"
                                 : "bg-accent/20 text-accent"
-                            }`}
-                        >
-                          {reg.status}
-                        </span>
-                        <Button
-                          size="sm"
-                          className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs h-8"
-                          onClick={() => handleViewDetails(reg)}
-                        >
-                          View
-                        </Button>
+                              }`}
+                          >
+                            {reg.status}
+                          </span>
+                          <Button
+                            size="sm"
+                            className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs h-8"
+                            onClick={() => handleViewDetails(reg)}
+                          >
+                            View
+                          </Button>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
                 </div>
 
                 {registrations.filter((reg) => reg.status === "Pending").length === 0 && (
@@ -256,56 +257,94 @@ const [loading, setLoading] = useState(false);
           {selectedReg && (<div className="space-y-0">
             <div className="space-y-0">
               <div className="grid grid-cols-2 gap-2">
-                 <div>
-      <label className="text-sm font-semibold text-gray-700">Registration Number</label>
-       <p className="text-base">{selectedReg.regid}</p> 
-       </div>
-              <div>
-  <label className="text-sm font-semibold text-gray-700">Vehicle Number</label>
-  <input
-    type="text"
-    value={vehicleNumber}
-    onChange={(e) => setVehicleNumber(e.target.value)}
-    className="w-full border border-gray-300 rounded-md p-2 mt-1"
-    placeholder="Enter Vehicle Number"
-  />
-</div>
-               <div>
-  <label className="text-sm font-semibold text-gray-700">Permit Number</label>
-  <input
-    type="text"
-    value={permitNumber}
-    onChange={(e) => setPermitNumber(e.target.value)}
-    className="w-full border border-gray-300 rounded-md p-2 mt-1"
-    placeholder="Enter Permit Number"
-  />
-</div>
-              <div>
-  <label className="text-sm font-semibold text-gray-700">Vehicle Type</label>
-  <select
-  value={haulage}
-  onChange={(e) => setHaulage(e.target.value)}
-  className="w-full border border-gray-300 rounded-md p-2 mt-1"
->
-  <option value="">Select Vehicle Type</option>
+                
+                
+                <div className="w-full border border-gray-300 rounded-md p-2 mt-1">
+                  <label className="text-sm font-medium text-foreground">
+                    Registration Number
+                  </label>
+                  <p className="text-base">{selectedReg.regid}</p>
+                </div>
 
-  {haulages.map((type) => (
-    <option key={type._id} value={type._id}>
-      {type.haulageName}
-    </option>
-  ))}
-</select>
-
-</div>
+                  <div className="w-full border border-gray-300 rounded-md p-2 mt-1">
+                  <label className="text-sm font-medium text-foreground">
+                    Loading Point
+                  </label>
+                  <p className="text-base">SadiqAbad</p>
+                </div>
 
 
-                {/* <div> <label className="text-sm font-semibold text-gray-700">Driver Name</label>
-        <p className="text-base">{selectedReg.driverImage}</p>
-         </div>  */}
+                  <div className="w-full border border-gray-300 rounded-md p-2 mt-1">
+                  <label className="text-sm font-medium text-foreground">
+                    Tower ID
+                  </label>
+                  <p className="text-base">{selectedReg.towerId}</p>
+                </div>
 
 
-                <div>
-                  <label className="text-sm font-semibold text-gray-700">Vehicle Location</label>
+
+                <div className="w-full border border-gray-300 rounded-md p-2 mt-1">
+                  <label className="text-sm font-medium text-foreground">
+                    Vehicle Number
+                  </label>
+                  <input
+                    type="text"
+                    value={vehicleNumber}
+                    onChange={(e) => setVehicleNumber(e.target.value)}
+                    className="w-full border border-gray-300 rounded-md p-2 mt-1"
+                    placeholder="Enter Vehicle Number"
+                  />
+                </div>
+              
+              
+              
+                <div className="w-full border border-gray-300 rounded-md p-2 mt-1">
+                  <label className="text-sm font-medium text-foreground">
+                    Permit Number
+                  </label>
+                  <input
+                    type="text"
+                    value={permitNumber}
+                    onChange={(e) => setPermitNumber(e.target.value)}
+                    className="w-full border border-gray-300 rounded-md p-2 mt-1"
+                    placeholder="Enter Permit Number"
+                  />
+                </div>
+
+
+                <div className="w-full border border-gray-300 rounded-md p-2 mt-1">
+                  <label className="text-sm font-medium text-foreground">
+                    Vehicle Type
+                  </label>
+
+                  <Select
+                    value={haulage}
+                    onValueChange={(value) => setHaulage(value)}
+                  >
+                    <SelectTrigger className="w-full mt-1 bg-muted border-border/50">
+                      <SelectValue placeholder="Select Vehicle Type" />
+                    </SelectTrigger>
+
+                    <SelectContent className="bg-card border-border/50">
+                      {haulages.length > 0 ? (
+                        haulages.map((type) => (
+                          <SelectItem key={type._id} value={type._id}>
+                            {type.haulageName}
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <SelectItem value="no-data" disabled>
+                          No Vehicle Types Available
+                        </SelectItem>
+                      )}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+
+
+                <div className="w-full border border-gray-300 rounded-md p-2 mt-1">
+                  <label className="text-sm font-semibold">Vehicle Location</label>
                   <p className="text-base">
                     {selectedReg?.gps?.latitude ?? "N/A"}, {selectedReg?.gps?.longitude ?? "N/A"}
                   </p>
@@ -333,22 +372,22 @@ const [loading, setLoading] = useState(false);
 
               </div> </div> <div className="flex gap-3 justify-end pt-4 border-t">
               <Button
-  onClick={() => handleReject(selectedReg)}
-  variant="destructive"
->
-  Reject
-</Button>
+                onClick={() => handleReject(selectedReg)}
+                variant="destructive"
+              >
+                Reject
+              </Button>
 
-             
-<Button
-  className="bg-green-600 hover:bg-green-700"
-  disabled={loading}
-  onClick={async () => handleAccept(selectedReg)}
->
-  {loading ? "Updating..." : "Accept"}
-</Button>
-                
-                </div> </div>)}
+
+              <Button
+                className="bg-green-600 hover:bg-green-700"
+                disabled={loading}
+                onClick={async () => handleAccept(selectedReg)}
+              >
+                {loading ? "Updating..." : "Accept"}
+              </Button>
+
+            </div> </div>)}
 
         </DialogContent>
       </Dialog>
