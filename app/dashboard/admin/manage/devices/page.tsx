@@ -17,7 +17,7 @@ import { SidebarNav } from "@/components/sidebar-nav"
 import { AdminLayout } from "../../AdminLayout"
 import { useSelector } from "react-redux"
 import { RootState } from "@/redux/store"
-import { getDeviceByMillid, getElps, updateDeviceByImei, updateElp } from "@/app/api/fapi"
+import { deleteDeviceByImei, getDeviceByMillid, getElps, updateDeviceByImei, updateElp } from "@/app/api/fapi"
 import { Mill } from "@/redux/slices/userSlice"
 import { Switch } from "@radix-ui/react-switch"
 import { useToast } from "@/hooks/use-toast"
@@ -170,10 +170,36 @@ const handleEdit = (device: Device) => {
   setEditingId(device._id);
   setIsOpen(true);
 };
+//  Deleting Device by Object  remember
+const handleDelete = async (device: Device) => {
+  const confirmDelete = window.confirm(
+    `Are you sure you want to delete device with IMEI ${device.imei}?`
+  );
 
-  const handleDelete = (id: string) => {
-    setDevices(devices.filter((d) => d._id !== id))
+  if (!confirmDelete) return;
+
+  try {
+    await deleteDeviceByImei(device.imei);
+
+    // Remove from local state
+    setDevices((prev) => prev.filter((d) => d._id !== device._id));
+
+    toast({
+      title: "Device Deleted",
+      description: "The device has been successfully removed.",
+      variant: "default",
+    });
+
+  } catch (error) {
+    console.error("Error deleting device:", error);
+
+    toast({
+      title: "Delete Failed",
+      description: "Something went wrong while deleting the device.",
+      variant: "destructive",
+    });
   }
+};
 
   return (
      <AdminLayout username={userName} millName={millName} >
@@ -487,7 +513,7 @@ const handleEdit = (device: Device) => {
             size="sm"
             variant="outline"
             className="text-xs bg-transparent border-border/50 text-destructive hover:text-destructive"
-            onClick={() => handleDelete(device._id)}
+           onClick={() => handleDelete(device)}
           >
             Delete
           </Button>
