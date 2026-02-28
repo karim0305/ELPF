@@ -20,6 +20,7 @@ import { RootState } from "@/redux/store"
 import { getDeviceByMillid, getElps, updateDeviceByImei, updateElp } from "@/app/api/fapi"
 import { Mill } from "@/redux/slices/userSlice"
 import { Switch } from "@radix-ui/react-switch"
+import { useToast } from "@/hooks/use-toast"
 
 export interface Location {
   _id: string;
@@ -68,7 +69,17 @@ export default function DevicesPage() {
   const [elps, setElps] = useState<Elp[]>([])
   const [isOpen, setIsOpen] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
-  const [formData, setFormData] = useState({elpId: "", imei: "" })
+const [formData, setFormData] = useState({
+  elpId: "",
+  imei: "",
+  type: "",
+  Tawerid: "",
+  latitude: "",
+  longitude: "",
+  altitude: "",
+  speed: "",
+});
+    const { toast } = useToast()
 
     useEffect(() => {
       if (user) {
@@ -122,6 +133,11 @@ const handleStatusToggle = async (device: Device) => {
 
     // Call API
     await updateDeviceByImei(device.imei, { status: newStatus });
+     toast({
+          title: "Device Status Updated",
+          description: `The device is currently ${newStatus}.`,
+          variant: "default",
+        });
 
     // Update local state
     setDevices((prevDevices) =>
@@ -139,8 +155,18 @@ const handleStatusToggle = async (device: Device) => {
 
 
 
- const handleEdit = (device: Device) => {
-  setFormData({ elpId: device.elpid._id, imei: device.imei }); // store IMEI too
+const handleEdit = (device: Device) => {
+  setFormData({
+    elpId: device.elpid?._id || "",
+    imei: device.imei,
+    type: device.type || "",
+    Tawerid: device.Tawerid || "",
+    latitude: device.location?.latitude?.toString() || "",
+    longitude: device.location?.longitude?.toString() || "",
+    altitude: device.location?.altitude?.toString() || "",
+    speed: device.location?.speed?.toString() || "",
+  });
+
   setEditingId(device._id);
   setIsOpen(true);
 };
@@ -197,13 +223,84 @@ const handleStatusToggle = async (device: Device) => {
               <h2 className="text-2xl font-bold text-foreground">Device Management</h2>
               <p className="text-sm text-muted-foreground">Manage all system devices</p>
             </div>
-           <Dialog open={isOpen} onOpenChange={setIsOpen}>
+<Dialog open={isOpen} onOpenChange={setIsOpen}>
   <DialogContent className="bg-card border-border/50">
     <DialogHeader>
       <DialogTitle>{editingId ? "Edit Device ELP" : "Add New Device"}</DialogTitle>
       <DialogDescription>Select the ELP for this device</DialogDescription>
     </DialogHeader>
+    {/* Type */}
+<div>
+  <label className="text-sm font-medium text-foreground">Type</label>
 
+  <Select
+    value={formData.type}
+    onValueChange={(value) =>
+      setFormData({ ...formData, type: value })
+    }
+  >
+    <SelectTrigger className="mt-1 bg-muted border-border/50">
+      <SelectValue placeholder="Select Type" />
+    </SelectTrigger>
+
+    <SelectContent className="bg-card border-border/50">
+      <SelectItem value="Registration">Registration</SelectItem>
+      <SelectItem value="Arrival">Arrival</SelectItem>
+    </SelectContent>
+  </Select>
+</div>
+
+{/* Tawerid */}
+<div>
+  <label className="text-sm font-medium">Tawerid</label>
+  <Input
+    value={formData.Tawerid}
+    onChange={(e) =>
+      setFormData({ ...formData, Tawerid: e.target.value })
+    }
+  />
+</div>
+
+{/* Location Fields */}
+<div>
+  <label className="text-sm font-medium">Latitude</label>
+  <Input
+    value={formData.latitude}
+    onChange={(e) =>
+      setFormData({ ...formData, latitude: e.target.value })
+    }
+  />
+</div>
+
+<div>
+  <label className="text-sm font-medium">Longitude</label>
+  <Input
+    value={formData.longitude}
+    onChange={(e) =>
+      setFormData({ ...formData, longitude: e.target.value })
+    }
+  />
+</div>
+
+<div>
+  <label className="text-sm font-medium">Altitude</label>
+  <Input
+    value={formData.altitude}
+    onChange={(e) =>
+      setFormData({ ...formData, altitude: e.target.value })
+    }
+  />
+</div>
+
+<div>
+  <label className="text-sm font-medium">Speed</label>
+  <Input
+    value={formData.speed}
+    onChange={(e) =>
+      setFormData({ ...formData, speed: e.target.value })
+    }
+  />
+</div>
     <div className="space-y-4">
       {/* ELP Select */}
       <div>
@@ -239,7 +336,7 @@ const handleStatusToggle = async (device: Device) => {
           onClick={() => {
             setIsOpen(false);
             setEditingId(null);
-            setFormData({ elpId: "", imei: "" });
+            setFormData({ elpId: "", imei: "", type: "", Tawerid: "", latitude: "", longitude: "", altitude: "", speed: "" });
           }}
         >
           Cancel
@@ -251,7 +348,17 @@ const handleStatusToggle = async (device: Device) => {
 
     try {
       // ✅ Update device ELP using device IMEI
-      await updateDeviceByImei(formData.imei, { elpid: formData.elpId });
+     await updateDeviceByImei(formData.imei, {
+  elpid: formData.elpId,
+  type: formData.type,
+  Tawerid: formData.Tawerid,
+  location: {
+    latitude: Number(formData.latitude),
+    longitude: Number(formData.longitude),
+    altitude: Number(formData.altitude),
+    speed: Number(formData.speed),
+  },
+});
 
       // Update local state
       setDevices((prev) =>
@@ -267,7 +374,12 @@ const handleStatusToggle = async (device: Device) => {
 
       setIsOpen(false);
       setEditingId(null);
-      setFormData({ elpId: "", imei: "" });
+      setFormData({ elpId: "", imei: "", type: "", Tawerid: "", latitude: "", longitude: "", altitude: "", speed: "" });
+       toast({
+          title: "Device Updated",
+          description: "The device's ELP and details have been updated.",
+          variant: "default",
+        });
     } catch (error) {
       console.error("Error updating device ELP:", error);
     }
