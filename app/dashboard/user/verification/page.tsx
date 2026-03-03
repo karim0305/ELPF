@@ -8,30 +8,30 @@ import { LocationMap } from "@/components/location-map"
 import { useSelector } from "react-redux"
 import { RootState } from "@/redux/store"
 import { addVerification, getVerificationsAndArrivals } from "@/app/api/fapi"
+import { Mill } from "@/redux/slices/userSlice"
 
 interface Gps {
   latitude: number
   longitude: number
 }
-
-interface Mill {
-  _id: string
-  millcode?: string
-  millname?: string
-  focalperson?: string
-  cnic?: string
-  phone?: string
-  address?: string
-  email?: string
-  profilePicture?: string
-  status?: string
+export interface Elp {
+  _id: string;
+  millid: string;
+  elpCode: string;
+  elpName: string;
+  remarks: string;
+  status: string; // "active" | "inactive" agar fixed values hain to union bana sakte ho
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
 }
+
 
 interface Arrival {
   _id: string
   millid: string
   deviceId: string
-  elpId: string
+  elpId: Elp
   gps: Gps
   towerId: string
   regid: string
@@ -50,7 +50,7 @@ interface Registration {
   userid?: string
   millid?: string
   deviceId?: string
-  elpId?: string
+  elpId?: Elp
   gps?: Gps
   towerId?: string
   regid?: string
@@ -75,6 +75,7 @@ interface Verification {
   updatedAt?: string
 }
 
+
 export default function VerificationPage() {
   const [verifications, setVerifications] = useState<Verification[]>([])
   const [selectedVer, setSelectedVer] = useState<Verification | null>(null)
@@ -92,6 +93,7 @@ export default function VerificationPage() {
     try {
       const response = await getVerificationsAndArrivals(millid)
       setVerifications(response.data)
+      console.log("Fetched verifications:", response.data)
     } catch (error) {
       console.error("Error fetching verifications:", error)
     }
@@ -190,25 +192,28 @@ export default function VerificationPage() {
                     >
                       <div>
                         <p className="font-medium">
-                          {ver.registrationid?.vehicleNumber || "-"}
+                         Vehicle Number {ver.registrationid?.vehicleNumber || "-"}
                         </p>
                         <p className="text-sm text-muted-foreground">
-                          Reg: {ver.registrationid?.regid || "-"}
+                          Registration ID {ver.registrationid?.regid || "-"}
+                        </p>
+                            <p className="text-sm text-muted-foreground">
+                          Document No {ver.registrationid?.documentNo || "-"}
                         </p>
                       </div>
 
                       <div className="flex items-center gap-3">
-                        <span
-                          className={`text-xs px-2 py-1 rounded font-medium ${
-                            ver.status === "Accepted"
-                              ? "bg-green-200 text-green-700"
+                           <span
+                          className={`text-xs px-2 py-1 rounded font-medium ${ver.status === "Accepted"
+                              ? "bg-primary/20 text-primary"
                               : ver.status === "Rejected"
-                              ? "bg-red-200 text-red-700"
-                              : "bg-yellow-200 text-yellow-700"
-                          }`}
+                                ? "bg-destructive/20 text-destructive"
+                                : "bg-accent/20 text-accent"
+                            }`}
                         >
                           {ver.status}
                         </span>
+                       
 
                         <Button
                           size="sm"
@@ -253,6 +258,8 @@ export default function VerificationPage() {
                 <p><strong>Reg ID:</strong> {selectedVer.registrationid?.regid || "-"}</p>
                 <p><strong>Permit:</strong> {selectedVer.registrationid?.documentNo || "-"}</p>
                 <p><strong>Type:</strong> {selectedVer.registrationid?.haulage || "-"}</p>
+                <p><strong>Tower ID:</strong> {selectedVer.registrationid?.towerId || "-"}</p>
+                <p><strong>ELP:</strong> {selectedVer.registrationid?.elpId?.elpName || "-"}</p>
 
                 {selectedVer.registrationid?.gps ? (
                   <>
@@ -275,7 +282,30 @@ export default function VerificationPage() {
                 </div>
               </div>
 
-              {/* Arrival Section */}
+              {/* 
+              async GetVerificationByMill(millid: string) {
+  return this.verificationModel
+    .find({ 
+      millid: new Types.ObjectId(millid),
+      status: "Pending"   // ✅ yeh add karo
+    })
+    .populate('millid')
+    .populate({
+      path: 'registrationid',
+      populate: { path: 'elpId', model: 'Elp' },
+    })
+    .populate({
+      path: 'arrivalid',
+      populate: { path: 'elpId', model: 'Elp' },
+    })
+    .lean();
+}
+
+backend me Ye ip Change krne se  Elp Name Bhi show ho jaye ga
+              
+              
+              
+              */}
               <div className="space-y-4 pl-6">
                 <h3 className="font-semibold text-lg">
                   Arrival
@@ -286,6 +316,8 @@ export default function VerificationPage() {
                     <p><strong>Reg ID:</strong> {selectedVer.arrivalid.regid}</p>
                     <p><strong>Permit:</strong> {selectedVer.arrivalid.documentNo}</p>
                     <p><strong>Type:</strong> {selectedVer.arrivalid.haulage}</p>
+                    <p><strong>Tower ID:</strong> {selectedVer.arrivalid.towerId}</p>
+                    <p><strong>ELP:</strong> {selectedVer.arrivalid.elpId.elpName}</p>
                     {selectedVer.arrivalid.gps ? (
                       <>
                         <p>

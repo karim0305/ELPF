@@ -10,6 +10,7 @@ import { addVerification, GetArrivalbyMillidAndElp, getHaulages, updateArrival, 
 import { useSelector } from "react-redux"
 import { RootState } from "@/redux/store"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Mill } from "@/redux/slices/userSlice"
 
 interface Haulage {
   _id: string;
@@ -38,7 +39,7 @@ interface Elp {
 interface Arrivals {
   _id: string;
   userid: string;
-  millid: string;
+  millid: Mill;
   deviceId: string;
   elpId: Elp;
 
@@ -108,20 +109,20 @@ const [loading, setLoading] = useState(false);
       setLoading(false);
     }
   }
-
+ 
 
  const AddInVerification = async () => {
   if (!selectedReg) return;
 
   try {
     const payload = {
-      millid: selectedReg.millid,
+      millid: selectedReg.millid._id,  
       registrationid: selectedReg._id,
       arrivalid: selectedReg._id,
       status: "Pending",
       remarks: selectedReg.remarks || "",
     };
- 
+    console.log("Adding verification with payload:", payload);
     await addVerification(payload);
 
     // Update UI after success
