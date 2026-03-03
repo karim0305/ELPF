@@ -1,7 +1,6 @@
 "use client"
 
 import { use, useEffect, useState } from "react"
-import { TopNav } from "@/components/top-nav"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
@@ -10,6 +9,7 @@ import { getHaulages, getRegistrationbyElp, updateRegistration } from "@/app/api
 import { useSelector } from "react-redux"
 import { RootState } from "@/redux/store"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { socket } from "@/lib/socket";
 
 interface Haulage {
   _id: string;
@@ -72,6 +72,41 @@ export default function RegistrationPage() {
   const [loading, setLoading] = useState(false);
   const user = useSelector((state: RootState) => state.users.currentUser);
   useEffect(() => {
+
+  socket.on("registration_created", (data) => {
+    console.log("🆕 New Registration:", data);
+
+    if (data.status === "Pending") {
+      setRegistrations((prev) => [data, ...prev]);
+    }
+  });
+
+  socket.on("registration_updated", (updated) => {
+    console.log("✏ Registration Updated:", updated);
+
+    setRegistrations((prev) =>
+      prev.map((reg) =>
+        reg._id === updated._id ? updated : reg
+      )
+    );
+  });
+
+  socket.on("registration_deleted", ({ id }) => {
+    console.log("🗑 Registration Deleted:", id);
+
+    setRegistrations((prev) =>
+      prev.filter((reg) => reg._id !== id)
+    );
+  });
+
+  return () => {
+    socket.off("registration_created");
+    socket.off("registration_updated");
+    socket.off("registration_deleted");
+  };
+
+}, []);
+  useEffect(() => {
     const millid = user?.millid?._id;
     if (millid) {
       GetRegistrationsByMill(millid);
@@ -81,6 +116,7 @@ export default function RegistrationPage() {
     setPermitNumber(selectedReg?.documentNo || "");
     setHaulage(selectedReg?.haulage || "");
   }, [registrations.length, selectedReg]);
+
 
 
 

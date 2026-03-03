@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Backend API Base URL
-  const baseUrl = 'https://elpb.vercel.app/elpapi';
+export  const baseUrl = 'https://elpb.vercel.app/elpapi';
 // const baseUrl = 'http://localhost:3010/elpapi';
 
 // Log API calls in development
