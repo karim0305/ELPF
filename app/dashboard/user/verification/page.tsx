@@ -283,25 +283,8 @@ export default function VerificationPage() {
               </div>
 
               {/* 
-              async GetVerificationByMill(millid: string) {
-  return this.verificationModel
-    .find({ 
-      millid: new Types.ObjectId(millid),
-      status: "Pending"   // ✅ yeh add karo
-    })
-    .populate('millid')
-    .populate({
-      path: 'registrationid',
-      populate: { path: 'elpId', model: 'Elp' },
-    })
-    .populate({
-      path: 'arrivalid',
-      populate: { path: 'elpId', model: 'Elp' },
-    })
-    .lean();
-}
 
-backend me Ye ip Change krne se  Elp Name Bhi show ho jaye ga
+
               
               
               
