@@ -36,11 +36,38 @@ interface Elp {
   updatedAt: Date;
 }
 
+
+interface Registration {
+  _id: string;
+  userid: string;
+  millid: Mill;
+  deviceId: string;
+  elpId: Elp;
+
+  gps: {
+    latitude: number;
+    longitude: number;
+  };
+  towerId: string;
+  regid: string;
+  haulage: string;
+  vehicleNumber: string;
+  documentNo: string;
+
+  driverImage: string;
+  vehicleImage: string;
+  permitImage: string;
+
+  remarks: string;
+  status: "Accepted" | "Rejected" | "Pending"; //
+}
+
 interface Arrivals {
   _id: string;
   userid: string;
   millid: Mill;
   deviceId: string;
+  registrationid: Registration;
   elpId: Elp;
 
   gps: {
@@ -116,8 +143,9 @@ const [loading, setLoading] = useState(false);
 
   try {
     const payload = {
-      millid: selectedReg.millid._id,  
-      registrationid: selectedReg._id,
+      millid: selectedReg.millid._id,
+      registrationid: "69a6cb771c71e2dccba648d5",
+      // yahan mujhy Arrival me 1 Field add krni hy registraionid,  registration ko populate krwa kr  selectedReg.registrationid._id
       arrivalid: selectedReg._id,
       status: "Pending",
       remarks: selectedReg.remarks || "",

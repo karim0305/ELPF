@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { LocationMap } from "@/components/location-map"
 import { useSelector } from "react-redux"
 import { RootState } from "@/redux/store"
-import { addVerification, getVerificationsAndArrivals } from "@/app/api/fapi"
+import { addVerification, getVerificationsAndArrivals, updateVerification } from "@/app/api/fapi"
 import { Mill } from "@/redux/slices/userSlice"
 
 interface Gps {
@@ -98,60 +98,43 @@ export default function VerificationPage() {
       console.error("Error fetching verifications:", error)
     }
   }
+ 
+const handleAccept = async () => {
+  if (!selectedVer) return;
 
-  const handleAccept = async () => {
-    if (!selectedVer) return;
+  try {
+    await updateVerification(selectedVer._id, {
+      status: "Accepted",
+    });
 
-    try {
-      const payload = {
-        millid: selectedVer.millid?._id || selectedVer.millid,
-        registrationid: selectedVer.registrationid?._id || selectedVer.registrationid,
-        arrivalid: selectedVer.arrivalid?._id || selectedVer.arrivalid,
-        status: "Accepted",
-        remarks: selectedVer.remarks || "",
-      };
+    // 🔥 Remove from list immediately
+    setVerifications((prev) =>
+      prev.filter((v) => v._id !== selectedVer._id)
+    );
 
-      await addVerification(payload as any);
-
-      // Update UI after success
-      setVerifications((prev) =>
-        prev.map((v) =>
-          v._id === selectedVer._id ? { ...v, status: "Accepted" } : v
-        )
-      );
-
-      setSelectedVer(null);
-    } catch (error) {
-      console.error("Error saving verification:", error);
-    }
-  };
-
-  const handleReject = async () => {
-    if (!selectedVer) return;
-
-    try {
-      const payload = {
-        millid: selectedVer.millid?._id || selectedVer.millid,
-        registrationid: selectedVer.registrationid?._id || selectedVer.registrationid,
-        arrivalid: selectedVer.arrivalid?._id || selectedVer.arrivalid,
-        status: "Rejected",
-        remarks: selectedVer.remarks || "",
-      };
-
-      await addVerification(payload as any);
-
-      // Update UI after success
-      setVerifications((prev) =>
-        prev.map((v) =>
-          v._id === selectedVer._id ? { ...v, status: "Rejected" } : v
-        )
-      );
-
-      setSelectedVer(null);
-    } catch (error) {
-      console.error("Error saving verification:", error);
-    }
+    setSelectedVer(null);
+  } catch (error) {
+    console.error("Error updating verification:", error);
   }
+};
+
+const handleReject = async () => {
+  if (!selectedVer) return;
+
+  try {
+    await updateVerification(selectedVer._id, {
+      status: "Rejected",
+    });
+
+    setVerifications((prev) =>
+      prev.filter((v) => v._id !== selectedVer._id)
+    );
+
+    setSelectedVer(null);
+  } catch (error) {
+    console.error("Error updating verification:", error);
+  }
+};
 
   return (
     <div className="flex flex-col bg-background min-h-screen">
