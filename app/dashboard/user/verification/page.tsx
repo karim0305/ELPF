@@ -43,6 +43,8 @@ interface Arrival {
   permitImage: string
   remarks: string
   status: string
+  createdAt: string
+  updatedAt: string
 }
 
 interface Registration {
@@ -62,6 +64,7 @@ interface Registration {
   permitImage?: string
   remarks?: string
   status?: "Accepted" | "Rejected" | "Pending"
+  createdAt?: string
 }
 
 interface Verification {
@@ -243,6 +246,12 @@ const handleReject = async () => {
                 <p><strong>Type:</strong> {selectedVer.registrationid?.haulage || "-"}</p>
                 <p><strong>Tower ID:</strong> {selectedVer.registrationid?.towerId || "-"}</p>
                 <p><strong>ELP:</strong> {selectedVer.registrationid?.elpId?.elpName || "-"}</p>
+                <p>
+                   <span className="font-semibold">Registration Time:</span> 
+  <span className="bg-gray-100 text-green-700 px-2 py-1 rounded-lg">
+     6h 33m ago
+  </span>
+                  </p>
 
                 {selectedVer.registrationid?.gps ? (
                   <>
@@ -284,6 +293,13 @@ const handleReject = async () => {
                     <p><strong>Type:</strong> {selectedVer.arrivalid.haulage}</p>
                     <p><strong>Tower ID:</strong> {selectedVer.arrivalid.towerId}</p>
                     <p><strong>ELP:</strong> {selectedVer.arrivalid.elpId.elpName}</p>
+                     <p>
+                      <span className="font-semibold">Arrival Time:</span> 
+  <span className="bg-gray-100 text-green-700 px-2 py-1 rounded-lg">
+     1h 33m ago
+  </span>
+                     </p>
+
                     {selectedVer.arrivalid.gps ? (
                       <>
                         <p>

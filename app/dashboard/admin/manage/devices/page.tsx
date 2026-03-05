@@ -79,6 +79,7 @@ const [formData, setFormData] = useState({
   altitude: "",
   speed: "",
 });
+ const [logo , setLogo] = useState("");
     const { toast } = useToast()
 
     useEffect(() => {
@@ -86,9 +87,11 @@ const [formData, setFormData] = useState({
         const userName = user.name || "User";
         const millName = user.millid?.millname || "Mill";
         const millid = user.millid?._id || "";
+          const logopic = user.millid?.profilePicture || "";
 
         setUserName(userName);
         setMillName(millName);
+              setLogo(logopic);
         setMillid(millid);
         GetDevicesByMill(millid);
         GetElpByMill(millid);
@@ -202,7 +205,7 @@ const handleDelete = async (device: Device) => {
 };
 
   return (
-     <AdminLayout username={userName} millName={millName} >
+     <AdminLayout username={userName} millName={millName} logo={logo} >
       <div className="flex bg-background min-h-screen">
         <div className="flex-1 flex flex-col overflow-hidden p-8">
           <div className="grid gap-6">
@@ -318,7 +321,7 @@ const handleDelete = async (device: Device) => {
   />
 </div>
 
-<div>
+{/* <div>
   <label className="text-sm font-medium">Speed</label>
   <Input
     value={formData.speed}
@@ -326,7 +329,7 @@ const handleDelete = async (device: Device) => {
       setFormData({ ...formData, speed: e.target.value })
     }
   />
-</div>
+</div> */}
     <div className="space-y-4">
       {/* ELP Select */}
       <div>
@@ -435,6 +438,7 @@ const handleDelete = async (device: Device) => {
     <div className="flex-1">Device Model</div>
     <div className="flex-1">IMEI</div>
     <div className="flex-1">Tawerid</div>
+    <div className="flex-1">Type</div>
     <div className="flex-1">ELP Name</div>
     <div className="flex-1">Status</div>
     <div className="flex-1 text-right">Actions</div>
@@ -471,6 +475,11 @@ const handleDelete = async (device: Device) => {
         {/* Tawerid */}
         <div className="flex-1 text-xs text-muted-foreground mt-1 md:mt-0">
           {device.Tawerid}
+        </div>
+
+            {/* Type */}
+        <div className="flex-1 text-xs text-muted-foreground mt-1 md:mt-0">
+          {device.type}
         </div>
 
         {/* ELP Name */}

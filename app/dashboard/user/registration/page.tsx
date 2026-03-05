@@ -73,39 +73,39 @@ export default function RegistrationPage() {
   const user = useSelector((state: RootState) => state.users.currentUser);
   useEffect(() => {
 
-  socket.on("registration_created", (data) => {
-    console.log("🆕 New Registration:", data);
+    socket.on("registration_created", (data) => {
+      console.log("🆕 New Registration:", data);
 
-    if (data.status === "Pending") {
-      setRegistrations((prev) => [data, ...prev]);
-    }
-  });
+      if (data.status === "Pending") {
+        setRegistrations((prev) => [data, ...prev]);
+      }
+    });
 
-  socket.on("registration_updated", (updated) => {
-    console.log("✏ Registration Updated:", updated);
+    socket.on("registration_updated", (updated) => {
+      console.log("✏ Registration Updated:", updated);
 
-    setRegistrations((prev) =>
-      prev.map((reg) =>
-        reg._id === updated._id ? updated : reg
-      )
-    );
-  });
+      setRegistrations((prev) =>
+        prev.map((reg) =>
+          reg._id === updated._id ? updated : reg
+        )
+      );
+    });
 
-  socket.on("registration_deleted", ({ id }) => {
-    console.log("🗑 Registration Deleted:", id);
+    socket.on("registration_deleted", ({ id }) => {
+      console.log("🗑 Registration Deleted:", id);
 
-    setRegistrations((prev) =>
-      prev.filter((reg) => reg._id !== id)
-    );
-  });
+      setRegistrations((prev) =>
+        prev.filter((reg) => reg._id !== id)
+      );
+    });
 
-  return () => {
-    socket.off("registration_created");
-    socket.off("registration_updated");
-    socket.off("registration_deleted");
-  };
+    return () => {
+      socket.off("registration_created");
+      socket.off("registration_updated");
+      socket.off("registration_deleted");
+    };
 
-}, []);
+  }, []);
   useEffect(() => {
     const millid = user?.millid?._id;
     if (millid) {
@@ -288,41 +288,39 @@ export default function RegistrationPage() {
         <DialogContent className="!max-w-[1200px] !max-h-[100vh] !overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Registration Details</DialogTitle>
-            <DialogDescription>Vehicle Registration - {selectedReg?.vehicleNumber}</DialogDescription>
+            <DialogDescription>Vehicle Registration -
+            <strong className="bg-gray-100 text-green-700 px-2 py-1 rounded-lg">
+                     {selectedReg?.regid}
+                        </strong>
+          </DialogDescription>
           </DialogHeader>
           {selectedReg && (<div className="space-y-0">
             <div className="space-y-0">
               <div className="grid grid-cols-2 gap-2">
-                
-                
+
+                {/* Registration Number */}
+                {/* <div className="w-full border border-gray-300 rounded-md p-2 mt-1">
+    <label className="text-sm font-medium text-foreground">Registration Number</label>
+    <p className="text-base">{selectedReg.regid}</p>
+  </div> */}
+
+                {/* Loading Point */}
                 <div className="w-full border border-gray-300 rounded-md p-2 mt-1">
-                  <label className="text-sm font-medium text-foreground">
-                    Registration Number
-                  </label>
-                  <p className="text-base">{selectedReg.regid}</p>
+                  <label className="text-sm font-medium text-foreground">Loading Point</label>
+                  <p className="text-base">{selectedReg.elpId.elpName}</p>
                 </div>
 
-                  <div className="w-full border border-gray-300 rounded-md p-2 mt-1">
-                  <label className="text-sm font-medium text-foreground">
-                    Loading Point
-                  </label>
-                  <p className="text-base">SadiqAbad</p>
-                </div>
-
-
-                  <div className="w-full border border-gray-300 rounded-md p-2 mt-1">
-                  <label className="text-sm font-medium text-foreground">
-                    Tower ID
-                  </label>
+                {/* Tower ID */}
+                <div className="w-full border border-gray-300 rounded-md p-2 mt-1">
+                  <label className="text-sm font-medium text-foreground">Tower ID</label>
                   <p className="text-base">{selectedReg.towerId}</p>
                 </div>
 
+             
 
-
+                {/* Vehicle Number */}
                 <div className="w-full border border-gray-300 rounded-md p-2 mt-1">
-                  <label className="text-sm font-medium text-foreground">
-                    Vehicle Number
-                  </label>
+                  <label className="text-sm font-medium text-foreground">Vehicle Number</label>
                   <input
                     type="text"
                     value={vehicleNumber}
@@ -331,13 +329,10 @@ export default function RegistrationPage() {
                     placeholder="Enter Vehicle Number"
                   />
                 </div>
-              
-              
-              
+
+                {/* Permit Number */}
                 <div className="w-full border border-gray-300 rounded-md p-2 mt-1">
-                  <label className="text-sm font-medium text-foreground">
-                    Permit Number
-                  </label>
+                  <label className="text-sm font-medium text-foreground">Permit Number</label>
                   <input
                     type="text"
                     value={permitNumber}
@@ -347,20 +342,13 @@ export default function RegistrationPage() {
                   />
                 </div>
 
-
+                {/* Vehicle Type */}
                 <div className="w-full border border-gray-300 rounded-md p-2 mt-1">
-                  <label className="text-sm font-medium text-foreground">
-                    Vehicle Type
-                  </label>
-
-                  <Select
-                    value={haulage}
-                    onValueChange={(value) => setHaulage(value)}
-                  >
+                  <label className="text-sm font-medium text-foreground">Vehicle Type</label>
+                  <Select value={haulage} onValueChange={(value) => setHaulage(value)}>
                     <SelectTrigger className="w-full mt-1 bg-muted border-border/50">
                       <SelectValue placeholder="Select Vehicle Type" />
                     </SelectTrigger>
-
                     <SelectContent className="bg-card border-border/50">
                       {haulages.length > 0 ? (
                         haulages.map((type) => (
@@ -377,26 +365,29 @@ export default function RegistrationPage() {
                   </Select>
                 </div>
 
-
-
-                <div>
-                  <label className="text-sm font-semibold text-gray-700">Vehicle Location</label>
-                  <p className="text-base">
-                    {selectedReg?.gps?.latitude ?? "N/A"}, {selectedReg?.gps?.longitude ?? "N/A"}
-                  </p>
+                   {/* Registration Time */}
+                <div className="w-full border border-gray-300 rounded-md p-2 mt-1 flex items-center justify-between">
+                  <span className="font-semibold text-foreground">Registration Time:</span>
+                  <span className="bg-gray-100 text-green-700 px-2 py-1 rounded-lg">
+                    1h 33m ago
+                  </span>
                 </div>
 
               </div>
 
-
-              <div> <label className="text-sm font-semibold text-gray-700 block mb-3">Documents</label> <div className="grid grid-cols-3 gap-2">
+              <div> <label className="text-sm font-semibold text-white-700 block mb-3">Documents</label> <div className="grid grid-cols-3 gap-2">
                 <img src={selectedReg.vehicleImage || "/placeholder.svg"} alt="Vehicle" className="w-full h-30 object-cover rounded-lg border border-gray-300" />
                 <img src={selectedReg.permitImage || "/placeholder.svg"} alt="Permit" className="w-full h-30 object-cover rounded-lg border border-gray-300" />
                 <img src={selectedReg.driverImage || "/placeholder.svg"} alt="Driver" className="w-full h-30 object-cover rounded-lg border border-gray-300" />
               </div>
               </div>
               <div>
-                <label className="text-sm font-semibold text-gray-700 block mb-2">Location Map</label>
+                <div>
+                  <label className="text-sm font-semibold text-white-700">Vehicle Location</label>
+                  <p className="text-base">
+                    {selectedReg?.gps?.latitude ?? "N/A"}, {selectedReg?.gps?.longitude ?? "N/A"}
+                  </p>
+                </div>
                 <LocationMap
                   location={{
                     latitude: selectedReg.gps.latitude,
