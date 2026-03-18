@@ -15,19 +15,22 @@ export default function AdminDashboard() {
     const user = useSelector((state: RootState) => state.users.currentUser);
     const [userName, setUserName] = useState("");
  const [millName, setMillName] = useState("");
+  const [logo , setLogo] = useState("");
 
     useEffect(() => {
         if (user?._id) {
         const userName = user.name || "User";
         const millName = user.millid?.millname || "Mill";
+           const logopic = user.millid?.profilePicture || "";
 
         setUserName(userName);
         setMillName(millName);
+        setLogo(logopic);
         }
     }, [user]);
 
     return (
-        <AdminLayout username={userName} millName={millName} >
+        <AdminLayout username={userName} millName={millName} logo={logo} >
             <div className="flex bg-background min-h-screen">
                 <div className="flex-1 flex flex-col overflow-hidden">
                     {/* Top Bar */}

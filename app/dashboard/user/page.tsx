@@ -18,7 +18,7 @@ export default function UserDashboard() {
             <p className="text-sm text-muted-foreground">Manage your operations and records</p>
           </div>
         </div>
-
+ 
         {/* Main Content */}
         <div className="flex-1 overflow-auto p-8">
           <div className="grid gap-6">

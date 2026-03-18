@@ -6,134 +6,146 @@ import { usePathname, useRouter } from "next/navigation"
 import { useState } from "react"
 import { logoutUser } from "@/redux/slices/userSlice"
 import { useDispatch } from "react-redux"
-import logo from "@/src/logo5.png"
 import Image from "next/image"
 import { LogOut } from "lucide-react"
+import logoImg from "@/src/logo5.png"
 
 interface NavItem {
-  label: string;
-  href?: string;
-  icon: React.ReactNode;
-  children?: NavItem[];
+  label: string
+  href?: string
+  icon: React.ReactNode
+  children?: NavItem[]
 }
 
 interface SidebarNavProps {
   items: NavItem[]
   title: string
   userRole: string
+  isSidebarOpen?: boolean
+  setIsSidebarOpen?: (value: boolean) => void
 }
 
-export function SidebarNav({ items, title, userRole }: SidebarNavProps) {
-  const dispatch = useDispatch();
+export function SidebarNav({ items, title, userRole, isSidebarOpen, setIsSidebarOpen }: SidebarNavProps) {
+  const dispatch = useDispatch()
   const pathname = usePathname()
   const router = useRouter()
   const [expandedItems, setExpandedItems] = useState<string[]>([])
 
   const toggleExpand = (label: string) => {
-    setExpandedItems((prev) => (prev.includes(label) ? prev.filter((item) => item !== label) : [...prev, label]))
+    setExpandedItems((prev) =>
+      prev.includes(label) ? prev.filter((item) => item !== label) : [...prev, label]
+    )
   }
-const handleLogout = () => {
-  // 1️⃣ Remove cookie
-  document.cookie = "token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
 
-  // 2️⃣ Clear redux state
-  dispatch(logoutUser());
-
-  // 3️⃣ Clear session storage (optional)
-  sessionStorage.clear();
-
-  // 4️⃣ Redirect to login
-  router.replace("/");
-};
-
+  const handleLogout = () => {
+    document.cookie = "token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;"
+    dispatch(logoutUser())
+    sessionStorage.clear()
+    router.replace("/")
+  }
 
   return (
-    <div className="w-64 bg-card border-r border-border/50 flex flex-col h-screen">
-      {/* Header */}
-      <div className="p-6 border-b border-border/50">
-        <div className="flex items-center">
-          <Image src={logo} alt="Logo" width={150} height={150} />
-        
+    <>
+      {/* Sidebar Overlay for Mobile */}
+      {isSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/30 z-10 sm:hidden"
+          onClick={() => setIsSidebarOpen && setIsSidebarOpen(false)}
+        ></div>
+      )}
+
+      <div
+        className={cn(
+          "fixed inset-y-0 left-0 w-64 bg-card border-r border-border/50 flex flex-col h-screen transition-transform transform sm:translate-x-0 z-20",
+          isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+        )}
+      >
+        {/* Header */}
+        <div className="p-6 border-b border-border/50 flex flex-col items-start">
+          <Image src={logoImg} alt="Logo" width={120} height={120} />
+          <p className="text-xs text-muted-foreground mt-2">Sugar Cane Loading System</p>
         </div>
-        <p className="text-xs text-muted-foreground pl-2"> Sugar Cane Loading System</p>
+
+        {/* Nav Items */}
+        <nav className="flex-1 p-4 space-y-1">
+          {items.map((item) => {
+            const isExpanded = expandedItems.includes(item.label)
+            const isActive = item.href ? pathname === item.href || pathname.startsWith(item.href + "/") : false
+            const hasChildren = item.children && item.children.length > 0
+
+            return (
+              <div key={item.label}>
+                {hasChildren ? (
+                  <button
+                    onClick={() => toggleExpand(item.label)}
+                    className={cn(
+                      "w-full flex items-center gap-3 px-4 py-2 rounded-lg text-sm font-medium transition-colors",
+                      isExpanded
+                        ? "bg-primary/10 text-primary"
+                        : "text-muted-foreground hover:bg-secondary/10 hover:text-secondary"
+                    )}
+                  >
+                    <span className="text-lg">{item.icon}</span>
+                    <span className="flex-1 text-left">{item.label}</span>
+                    <span className="text-xs">{isExpanded ? "▼" : "▶"}</span>
+                  </button>
+                ) : (
+                  <Link
+                    href={item.href!}
+                    className={cn(
+                      "flex items-center gap-3 px-4 py-2 rounded-lg text-sm font-medium transition-colors",
+                      isActive
+                        ? "bg-primary/10 text-primary"
+                        : "text-muted-foreground hover:bg-secondary/10 hover:text-secondary"
+                    )}
+                  >
+                    <span className="text-lg">{item.icon}</span>
+                    <span>{item.label}</span>
+                  </Link>
+                )}
+
+                {/* Submenu */}
+                {hasChildren && isExpanded && (
+                  <div className="space-y-1 mt-2">
+                    {item.children?.map((child) => {
+                      const isChildActive =
+                        child.href && (pathname === child.href || pathname.startsWith(child.href + "/"))
+                      return (
+                        <Link
+                          key={child.href}
+                          href={child.href!}
+                          className={cn(
+                            "flex items-center gap-3 px-4 py-2 rounded-lg text-sm font-medium transition-colors ml-6",
+                            isChildActive
+                              ? "bg-primary/10 text-primary"
+                              : "text-muted-foreground hover:bg-secondary/10 hover:text-secondary"
+                          )}
+                        >
+                          <span className="text-lg w-6">{child.icon}</span>
+                          <span>{child.label}</span>
+                        </Link>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
+            )
+          })}
+        </nav>
+
+        {/* Footer */}
+        <div className="p-4 border-t border-border/50">
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center gap-3 px-4 py-2 rounded-lg text-sm text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
+          >
+            <span className="text-lg">
+              <LogOut />
+            </span>
+            <span>Logout</span>
+          </button>
+        </div>
       </div>
-
-      {/* Nav Items */}
-      <nav className="flex-1 p-4 space-y-1">
-        {items.map((item) => {
-          const isExpanded = expandedItems.includes(item.label)
-          const isActive = item.href ? pathname === item.href || pathname.startsWith(item.href + "/") : false
-          const hasChildren = item.children && item.children.length > 0
-
-          return (
-            <div key={item.label}>
-              {hasChildren ? (
-                <button
-                  onClick={() => toggleExpand(item.label)}
-                  className={cn(
-                    "w-full flex items-center gap-3 px-4 py-2 rounded-lg text-sm font-medium transition-colors",
-                    isExpanded
-                      ? "bg-primary/10 text-primary"
-                      : "text-muted-foreground hover:bg-secondary/10 hover:text-secondary",
-                  )}
-                >
-                  <span className="text-lg">{item.icon}</span>
-                  <span className="flex-1 text-left">{item.label}</span>
-                  <span className="text-xs">{isExpanded ? "▼" : "▶"}</span>
-                </button>
-              ) : (
-                <Link
-                  href={item.href!}
-                  className={cn(
-                    "flex items-center gap-3 px-4 py-2 rounded-lg text-sm font-medium transition-colors",
-                    isActive
-                      ? "bg-primary/10 text-primary"
-                      : "text-muted-foreground hover:bg-secondary/10 hover:text-secondary",
-                  )}
-                >
-                  <span className="text-lg">{item.icon}</span>
-                  <span>{item.label}</span>
-                </Link>
-              )}
-
-              {/* Submenu */}
-              {hasChildren && isExpanded && (
-                <div className="space-y-1 mt-2">
-                  {item.children?.map((child) => {
-                    const isChildActive =
-                      child.href && (pathname === child.href || pathname.startsWith(child.href + "/"))
-                    return (
-                      <Link
-                        key={child.href}
-                        href={child.href!}
-                        className={cn(
-                          "flex items-center gap-3 px-4 py-2 rounded-lg text-sm font-medium transition-colors ml-6",
-                          isChildActive
-                            ? "bg-primary/10 text-primary"
-                            : "text-muted-foreground hover:bg-secondary/10 hover:text-secondary",
-                        )}>
-                        <span className="text-lg w-6">{child.icon}</span>
-                        <span>{child.label}</span>
-                      </Link>
-                    )
-                  })}
-                </div>
-              )}
-            </div>
-          )
-        })}
-      </nav>
-
-      {/* Footer */}
-      <div className="p-4 border-t border-border/50">
-        <button
-          onClick={handleLogout}
-          className="w-full flex items-center gap-3 px-4 py-2 rounded-lg text-sm text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
-        >
-          <span className="text-lg"><LogOut /></span>
-          <span>Logout</span>
-        </button>
-      </div>
-    </div>
+    </>
   )
 }

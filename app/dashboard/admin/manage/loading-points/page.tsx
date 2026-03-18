@@ -41,6 +41,7 @@ const user = useSelector((state: RootState) => state.users.currentUser);
  const [millid, setMillid] = useState("");
  const [lps, setLps] = useState<LoadingPoint[]>([])
  const [updatingStatusId, setUpdatingStatusId] = useState<string | null>(null);
+  const [logo , setLogo] = useState("");
 
 
     useEffect(() => {
@@ -48,9 +49,12 @@ const user = useSelector((state: RootState) => state.users.currentUser);
         const userName = user.name || "User";
         const millName = user.millid?.millname || "Mill";
         const millId = user.millid?._id || "Mill";
+        const logopic = user.millid?.profilePicture || "";
+
         setUserName(userName);
         setMillName(millName);
         setMillid(millId);
+        setLogo(logopic);
         GetElpByMill(millId);
         console.log("Current User in AdminLayout:", user);
         console.log("User Name:", userName);
@@ -206,7 +210,7 @@ const handleLpStatusToggle = async (lp: LoadingPoint) => {
 
 
   return (
-     <AdminLayout username={userName} millName={millName} >
+     <AdminLayout username={userName} millName={millName} logo={logo} >
     <div className="flex bg-background min-h-screen">
       <div className="flex-1 flex flex-col overflow-hidden">
         <div className="flex-1 overflow-auto p-8">

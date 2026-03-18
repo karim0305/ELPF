@@ -69,11 +69,13 @@ export default function ReportsPage() {
  const [userName, setUserName] = useState("");
  const [millName, setMillName] = useState("");
  const [millid, setMillid] = useState("");
+  const [logo , setLogo] = useState("");
  useEffect(() => {
    if (user) {
      setUserName(user.name);  
      setMillName(user.millid?.millname ?? "");
      setMillid(user.millid?._id ?? "");
+     setLogo(user.millid?.profilePicture ?? "");
    }
  }, [user])
   const [registrationFilters, setRegistrationFilters] = useState<ReportFilters>({
@@ -195,7 +197,7 @@ export default function ReportsPage() {
   )
 
   return (
-    <AdminLayout username={userName} millName={millName} >
+    <AdminLayout username={userName} millName={millName} logo={logo} >
     <div className="flex flex-col bg-background min-h-screen">
     
       <div className="flex-1 flex flex-col overflow-hidden">

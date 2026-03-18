@@ -53,14 +53,18 @@ export default function UsersPage() {
   const user = useSelector((state: RootState) => state.users.currentUser);
  const [userName, setUserName] = useState("");
  const [millName, setMillName] = useState("");
+  const [logo , setLogo] = useState("");
    const { toast } = useToast()
 
     useEffect(() => {
       if (user) {
         const userName = user.name || "User";
         const millName = user.millid?.millname || "Mill";
+        const logopic = user.millid?.profilePicture || "";
+
         setUserName(userName);
         setMillName(millName);
+        setLogo(logopic);
         console.log("Current User in AdminLayout:", user);
         console.log("User Name:", userName);
         console.log("Mill Name:", millName);
@@ -226,49 +230,85 @@ const filteredUsers = users.filter(
 
 
   return (
-       <AdminLayout username={userName} millName={millName} >
+       <AdminLayout username={userName} millName={millName} logo={logo}  >
     <div className="flex bg-background min-h-screen">
       
 
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Top Bar */}
-        <div className="bg-card border-b border-border/50 px-8 py-4 flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">All Users Management</h1>
-            <p className="text-sm text-muted-foreground">Create, edit, and manage system users</p>
-            {error && <p className="text-sm text-destructive mt-1">{error}</p>}
-          </div>
-          <div className="flex gap-2">
-            <Button variant="outline" className="border-border/50 bg-transparent" disabled={loading}>
-              📥 Export Users
-            </Button>
-            <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-              <DialogTrigger asChild>
-                <Button 
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground" 
-                  onClick={handleNewUser}
-                  disabled={loading}
-                >
-                  ➕ Add New User
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="!max-w-[1200px] !max-h-[100vh] !overflow-y-auto">
-                <DialogHeader>
-                  <DialogTitle>{editingUser ? "Edit User" : "Create New User"}</DialogTitle>
-                  <DialogDescription>
-                    {editingUser ? "Update user information below" : "Fill in the user details to create a new account"}
-                  </DialogDescription>
-                </DialogHeader>
-                <UserFormModal
-                  initialData={editingUser || undefined}
-                  onSubmit={editingUser ? handleUpdateUser : handleCreateUser}
-                  onClose={() => setIsModalOpen(false)}
-                  isLoading={submitting}
-                />
-              </DialogContent>
-            </Dialog>
-          </div>
+     <div className="bg-card border-b border-border/50 px-4 sm:px-8 py-4 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+  {/* Left Section: Title and Description */}
+  <div className="flex flex-col gap-1 sm:gap-2">
+    <h1 className="text-lg sm:text-2xl font-bold text-foreground">
+      All Users Management
+    </h1>
+    <p className="text-xs sm:text-sm text-muted-foreground">
+      Create, edit, and manage system users
+    </p>
+    {error && (
+      <p className="text-xs sm:text-sm text-destructive mt-1">
+        {error}
+      </p>
+    )}
+  </div>
+
+  {/* Right Section: Buttons */}
+  <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+    <Button
+      variant="outline"
+      className="border-border/50 bg-transparent w-full sm:w-auto"
+      disabled={loading}
+    >
+      📥 Export Users
+    </Button>
+
+    <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+      <DialogTrigger asChild>
+        <Button
+          className="bg-primary hover:bg-primary/90 text-primary-foreground w-full sm:w-auto"
+          onClick={handleNewUser}
+          disabled={loading}
+        >
+          ➕ Add New User
+        </Button>
+      </DialogTrigger>
+
+      <DialogContent
+        className="
+          w-full 
+          max-w-[95vw] 
+          sm:max-w-[600px] 
+          md:max-w-[800px] 
+          lg:max-w-[1200px] 
+          h-[90vh] 
+          overflow-y-auto 
+          rounded-lg
+          p-4 sm:p-6
+        "
+      >
+        <DialogHeader>
+          <DialogTitle className="text-lg sm:text-xl font-bold">
+            {editingUser ? "Edit User" : "Create New User"}
+          </DialogTitle>
+          <DialogDescription className="text-xs sm:text-sm text-muted-foreground">
+            {editingUser
+              ? "Update user information below"
+              : "Fill in the user details to create a new account"}
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="mt-4">
+          <UserFormModal
+            initialData={editingUser || undefined}
+            onSubmit={editingUser ? handleUpdateUser : handleCreateUser}
+            onClose={() => setIsModalOpen(false)}
+            isLoading={submitting}
+          />
         </div>
+      </DialogContent>
+    </Dialog>
+  </div>
+</div>
 
         {/* Main Content */}
         <div className="flex-1 overflow-auto p-8">

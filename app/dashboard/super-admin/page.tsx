@@ -39,7 +39,7 @@ export default function SuperAdminDashboard() {
 
   <div className="text-right">
     <p className="text-2xl font-bold text-muted-foreground ">
-      Welcome Mr. {user?.name || "User"}
+      {/* Welcome Mr. {user?.name || "User"} */}
     </p>
   </div>
 </div>

@@ -213,43 +213,63 @@ export default function UsersPage() {
 
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Top Bar */}
-        <div className="bg-card border-b border-border/50 px-8 py-4 flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">All Users Management</h1>
-            <p className="text-sm text-muted-foreground">Create, edit, and manage system users</p>
-            {error && <p className="text-sm text-destructive mt-1">{error}</p>}
-          </div>
-          <div className="flex gap-2">
-            <Button variant="outline" className="border-border/50 bg-transparent" disabled={loading}>
-              📥 Export Users
-            </Button>
-            <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-              <DialogTrigger asChild>
-                <Button 
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground" 
-                  onClick={handleNewUser}
-                  disabled={loading}
-                >
-                  ➕ Add New User
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="!max-w-[1200px] !max-h-[100vh] !overflow-y-auto">
-                <DialogHeader>
-                  <DialogTitle>{editingUser ? "Edit User" : "Create New User"}</DialogTitle>
-                  <DialogDescription>
-                    {editingUser ? "Update user information below" : "Fill in the user details to create a new account"}
-                  </DialogDescription>
-                </DialogHeader>
-                <UserFormModal
-                  initialData={editingUser || undefined}
-                  onSubmit={editingUser ? handleUpdateUser : handleCreateUser}
-                  onClose={() => setIsModalOpen(false)}
-                  isLoading={submitting}
-                />
-              </DialogContent>
-            </Dialog>
-          </div>
-        </div>
+   <div className="bg-card border-b border-border/50 px-4 md:px-8 py-4 flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+
+  <div>
+    <h1 className="text-xl md:text-2xl font-bold text-foreground">
+      All Users Management
+    </h1>
+    <p className="text-sm text-muted-foreground">
+      Create, edit, and manage system users
+    </p>
+    {error && <p className="text-sm text-destructive mt-1">{error}</p>}
+  </div>
+
+  {/* Buttons responsive */}
+  <div className="flex flex-wrap gap-2 w-full md:w-auto">
+
+    <Button
+      variant="outline"
+      className="border-border/50 bg-transparent flex-1 md:flex-none"
+      disabled={loading}
+    >
+      📥 Export Users
+    </Button>
+
+    <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+      <DialogTrigger asChild>
+        <Button
+          className="bg-primary hover:bg-primary/90 text-primary-foreground flex-1 md:flex-none"
+          onClick={handleNewUser}
+          disabled={loading}
+        >
+          ➕ Add New User
+        </Button>
+      </DialogTrigger>
+
+      <DialogContent className="!max-w-[1200px] !max-h-[100vh] !overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>
+            {editingUser ? "Edit User" : "Create New User"}
+          </DialogTitle>
+          <DialogDescription>
+            {editingUser
+              ? "Update user information below"
+              : "Fill in the user details to create a new account"}
+          </DialogDescription>
+        </DialogHeader>
+
+        <UserFormModal
+          initialData={editingUser || undefined}
+          onSubmit={editingUser ? handleUpdateUser : handleCreateUser}
+          onClose={() => setIsModalOpen(false)}
+          isLoading={submitting}
+        />
+      </DialogContent>
+    </Dialog>
+
+  </div>
+</div>
 
         {/* Main Content */}
         <div className="flex-1 overflow-auto p-8">
